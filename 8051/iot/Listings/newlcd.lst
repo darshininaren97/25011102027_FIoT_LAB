@@ -1,0 +1,753 @@
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE NEWLCD
+OBJECT MODULE PLACED IN .\Objects\newlcd.obj
+COMPILER INVOKED BY: C:\Users\ndars\C51\BIN\C51.EXE newlcd.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND CODE PRINT(.\Li
+                    -stings\newlcd.lst) TABS(2) OBJECT(.\Objects\newlcd.obj)
+
+line level    source
+
+   1          #include <reg51.h>
+   2          #define PORT P3
+   3          sbit RS = P3^2;
+   4          sbit E  = P3^3;
+   5          
+   6          sbit UP_ROW    = P2^3;
+   7          sbit DOWN_ROW  = P2^2;
+   8          sbit LEFT_ROW  = P2^1;
+   9          sbit RIGHT_ROW = P2^0;
+  10          sbit COL = P2^7;
+  11          
+  12          /*
+  13          sbit LCD_D4 = P3^4;
+  14          sbit LCD_D5 = P3^5;
+  15          sbit LCD_D6 = P3^6;
+  16          sbit LCD_D7 = P3^7;
+  17          */
+  18          void delay(){
+  19   1        int i,j;
+  20   1        for(i=0;i<2;i++){
+  21   2          for(j=0;j<1275;j++){}}}
+  22                
+  23          void delay_button(){
+  24   1        int i,j;
+  25   1        for(i=0;i<5;i++){
+  26   2          for(j=0;j<5;j++){}}}
+  27                
+  28          void lcd_send_nibble(unsigned char nibble){
+  29   1        
+  30   1        PORT=(PORT &0x0F)|(nibble & 0xF0);
+  31   1        E=1;
+  32   1        delay();
+  33   1        E=0;
+  34   1        delay();
+  35   1      }
+  36          void lcd_cmd(unsigned char cmd){
+  37   1        RS=0;
+  38   1        lcd_send_nibble(cmd);
+  39   1        lcd_send_nibble(cmd<<4);
+  40   1        delay();
+  41   1        
+  42   1      }
+  43          void lcd_data(unsigned char d){
+  44   1        RS=1;
+  45   1        lcd_send_nibble(d);
+  46   1        
+  47   1        lcd_send_nibble(d<<4);
+  48   1        delay();
+  49   1      }
+  50          void lcd_init(){
+  51   1        delay();
+  52   1        lcd_send_nibble(0x20);
+  53   1        lcd_cmd(0x28);
+  54   1        //lcd_cmd(0x02);//return home
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 2   
+
+  55   1        lcd_cmd(0x0E); //display ON, cursor ON
+  56   1        lcd_cmd(0x06);//increment cursor direction, does not accompany display shift
+  57   1        lcd_cmd(0x01);//clear display
+  58   1        delay();
+  59   1        delay();
+  60   1        
+  61   1      }
+  62          void lcd_puts(char *str)
+  63          {
+  64   1          int i = 0;
+  65   1      
+  66   1          while(str[i] != '\0')
+  67   1          {
+  68   2              lcd_data(str[i]);
+  69   2              i++;
+  70   2          }
+  71   1      }
+  72          void lcd_goto(unsigned char row, unsigned char col){
+  73   1        if(row==1){
+  74   2            lcd_cmd(0x80+0x00+(col-1));}
+  75   1        if(row==2){
+  76   2            lcd_cmd(0x80+0x40+(col-1));}
+  77   1      }
+  78          
+  79          unsigned char check_button()
+  80          {
+  81   1            // UP
+  82   1          UP_ROW = 0;
+  83   1          DOWN_ROW = 1;
+  84   1          LEFT_ROW = 1;
+  85   1          RIGHT_ROW = 1;
+  86   1      
+  87   1          COL = 1;
+  88   1      
+  89   1          if(COL == 0)
+  90   1          {
+  91   2              delay_button();
+  92   2      
+  93   2              if(COL == 0)
+  94   2              {
+  95   3                  while(COL == 0);
+  96   3      
+  97   3                  return 1;
+  98   3              }
+  99   2          }
+ 100   1      
+ 101   1             //DOWN
+ 102   1          UP_ROW = 1;
+ 103   1          DOWN_ROW = 0;
+ 104   1          LEFT_ROW = 1;
+ 105   1          RIGHT_ROW = 1;
+ 106   1      
+ 107   1          COL = 1;
+ 108   1      
+ 109   1          if(COL == 0)
+ 110   1          {
+ 111   2              delay_button();
+ 112   2      
+ 113   2              if(COL == 0)
+ 114   2              {
+ 115   3                  while(COL == 0);
+ 116   3      
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 3   
+
+ 117   3                  return 2;
+ 118   3              }
+ 119   2          }
+ 120   1             //LEFT
+ 121   1          UP_ROW = 1;
+ 122   1          DOWN_ROW = 1;
+ 123   1          LEFT_ROW = 0;
+ 124   1          RIGHT_ROW = 1;
+ 125   1      
+ 126   1          COL = 1;
+ 127   1      
+ 128   1          if(COL == 0)
+ 129   1          {
+ 130   2              delay_button();
+ 131   2      
+ 132   2              if(COL == 0)
+ 133   2              {
+ 134   3                  while(COL == 0);
+ 135   3      
+ 136   3                  return 3;
+ 137   3              }
+ 138   2          }
+ 139   1          //RIGHT
+ 140   1          UP_ROW = 1;
+ 141   1          DOWN_ROW = 1;
+ 142   1          LEFT_ROW = 1;
+ 143   1          RIGHT_ROW = 0;
+ 144   1      
+ 145   1          COL = 1;
+ 146   1      
+ 147   1          if(COL == 0)
+ 148   1          {
+ 149   2              delay_button();
+ 150   2      
+ 151   2              if(COL == 0)
+ 152   2              {
+ 153   3                  while(COL == 0);
+ 154   3      
+ 155   3                  return 4;
+ 156   3              }
+ 157   2          }
+ 158   1      
+ 159   1      
+ 160   1          return 0;
+ 161   1      }
+ 162          
+ 163          int main(){
+ 164   1        unsigned char save='A';
+ 165   1          unsigned char button;
+ 166   1          unsigned char row = 1;
+ 167   1          unsigned char col = 1;
+ 168   1          UP_ROW = 1;
+ 169   1          DOWN_ROW = 1;
+ 170   1          LEFT_ROW = 1;
+ 171   1          RIGHT_ROW = 1;
+ 172   1          COL = 1;
+ 173   1        lcd_init();
+ 174   1        lcd_data(save);
+ 175   1        //lcd_cmd(0xC0);
+ 176   1        lcd_goto(2,1);
+ 177   1        lcd_puts("HELLO");
+ 178   1      
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 4   
+
+ 179   1          lcd_goto(row, col);
+ 180   1          while(1)
+ 181   1          {
+ 182   2              button = check_button();
+ 183   2              //Up
+ 184   2              if(button == 1)
+ 185   2              {
+ 186   3                  if(row > 1)
+ 187   3                  { lcd_goto(row, col);
+ 188   4                    
+ 189   4                      lcd_data(' ');
+ 190   4                      row--;
+ 191   4                      lcd_goto(row, col);
+ 192   4                      lcd_data(save);
+ 193   4                  }
+ 194   3              }
+ 195   2              //DOWN
+ 196   2              else if(button == 2)
+ 197   2              {
+ 198   3                  if(row < 2)
+ 199   3                  {lcd_goto(row, col);
+ 200   4                    
+ 201   4                      lcd_data(' ');
+ 202   4                      row++;
+ 203   4      
+ 204   4                      lcd_goto(row, col);
+ 205   4                      lcd_data(save);
+ 206   4      
+ 207   4                  }
+ 208   3              }
+ 209   2              //LEFT
+ 210   2              else if(button == 3)
+ 211   2              {
+ 212   3                  if(col > 1)
+ 213   3                  {lcd_goto(row, col);
+ 214   4                      lcd_data(' ');
+ 215   4                      col--;
+ 216   4      
+ 217   4                      lcd_goto(row, col);
+ 218   4                      lcd_data(save);
+ 219   4      
+ 220   4                  }
+ 221   3              }
+ 222   2              //RIGHT
+ 223   2              else if(button == 4)
+ 224   2              {
+ 225   3                  if(col < 16)
+ 226   3                  {lcd_goto(row, col);
+ 227   4                      lcd_data(' ');
+ 228   4                      col++;
+ 229   4                      lcd_goto(row, col);
+ 230   4                    lcd_data(save);
+ 231   4                  }
+ 232   3              }
+ 233   2          }
+ 234   1      }
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 5   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION delay (BEGIN)
+                                           ; SOURCE LINE # 18
+                                           ; SOURCE LINE # 20
+;---- Variable 'i' assigned to Register 'R6/R7' ----
+0000 E4                CLR     A
+0001 FF                MOV     R7,A
+0002 FE                MOV     R6,A
+0003         ?C0001:
+                                           ; SOURCE LINE # 21
+;---- Variable 'j' assigned to Register 'R4/R5' ----
+0003 E4                CLR     A
+0004 FD                MOV     R5,A
+0005 FC                MOV     R4,A
+0006         ?C0004:
+0006 0D                INC     R5
+0007 BD0001            CJNE    R5,#00H,?C0056
+000A 0C                INC     R4
+000B         ?C0056:
+000B BC04F8            CJNE    R4,#04H,?C0004
+000E BDFBF5            CJNE    R5,#0FBH,?C0004
+0011         ?C0003:
+0011 0F                INC     R7
+0012 BF0001            CJNE    R7,#00H,?C0057
+0015 0E                INC     R6
+0016         ?C0057:
+0016 EF                MOV     A,R7
+0017 6402              XRL     A,#02H
+0019 4E                ORL     A,R6
+001A 70E7              JNZ     ?C0001
+001C         ?C0007:
+001C 22                RET     
+             ; FUNCTION delay (END)
+
+             ; FUNCTION delay_button (BEGIN)
+                                           ; SOURCE LINE # 23
+                                           ; SOURCE LINE # 25
+;---- Variable 'i' assigned to Register 'R6/R7' ----
+0000 E4                CLR     A
+0001 FF                MOV     R7,A
+0002 FE                MOV     R6,A
+0003         ?C0008:
+                                           ; SOURCE LINE # 26
+;---- Variable 'j' assigned to Register 'R4/R5' ----
+0003 E4                CLR     A
+0004 FD                MOV     R5,A
+0005 FC                MOV     R4,A
+0006         ?C0011:
+0006 0D                INC     R5
+0007 BD0001            CJNE    R5,#00H,?C0058
+000A 0C                INC     R4
+000B         ?C0058:
+000B ED                MOV     A,R5
+000C 6405              XRL     A,#05H
+000E 4C                ORL     A,R4
+000F 70F5              JNZ     ?C0011
+0011         ?C0010:
+0011 0F                INC     R7
+0012 BF0001            CJNE    R7,#00H,?C0059
+0015 0E                INC     R6
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 6   
+
+0016         ?C0059:
+0016 EF                MOV     A,R7
+0017 6405              XRL     A,#05H
+0019 4E                ORL     A,R6
+001A 70E7              JNZ     ?C0008
+001C         ?C0014:
+001C 22                RET     
+             ; FUNCTION delay_button (END)
+
+             ; FUNCTION L?0065 (BEGIN)
+0000 120000      R     LCALL   _lcd_send_nibble
+0003 EB                MOV     A,R3
+0004 C4                SWAP    A
+0005 54F0              ANL     A,#0F0H
+0007 FF                MOV     R7,A
+             ; FUNCTION _lcd_send_nibble (BEGIN)
+                                           ; SOURCE LINE # 28
+;---- Variable 'nibble' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 30
+0008 EF                MOV     A,R7
+0009 54F0              ANL     A,#0F0H
+000B FF                MOV     R7,A
+000C E5B0              MOV     A,P3
+000E 540F              ANL     A,#0FH
+0010 4F                ORL     A,R7
+0011 F5B0              MOV     P3,A
+                                           ; SOURCE LINE # 31
+0013 D2B3              SETB    E
+                                           ; SOURCE LINE # 32
+0015 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 33
+0018 C2B3              CLR     E
+                                           ; SOURCE LINE # 34
+001A 020000      R     LJMP    delay
+             ; FUNCTION _lcd_send_nibble (END)
+
+             ; FUNCTION _lcd_cmd (BEGIN)
+                                           ; SOURCE LINE # 36
+;---- Variable 'cmd' assigned to Register 'R3' ----
+0000 AB07              MOV     R3,AR7
+                                           ; SOURCE LINE # 37
+0002 C2B2              CLR     RS
+                                           ; SOURCE LINE # 38
+                                           ; SOURCE LINE # 39
+0004 120000      R     LCALL   L?0065
+                                           ; SOURCE LINE # 40
+0007 020000      R     LJMP    delay
+             ; FUNCTION _lcd_cmd (END)
+
+             ; FUNCTION L?0063 (BEGIN)
+0000         L?0064:
+0000 AD00        R     MOV     R5,col
+0002 AF00        R     MOV     R7,row
+0004 120000      R     LCALL   _lcd_goto
+0007 7F20              MOV     R7,#020H
+             ; FUNCTION _lcd_data (BEGIN)
+                                           ; SOURCE LINE # 43
+;---- Variable 'd' assigned to Register 'R3' ----
+0009 AB07              MOV     R3,AR7
+                                           ; SOURCE LINE # 44
+000B D2B2              SETB    RS
+                                           ; SOURCE LINE # 45
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 7   
+
+                                           ; SOURCE LINE # 47
+000D 120000      R     LCALL   L?0065
+                                           ; SOURCE LINE # 48
+0010 020000      R     LJMP    delay
+             ; FUNCTION _lcd_data (END)
+
+             ; FUNCTION lcd_init (BEGIN)
+                                           ; SOURCE LINE # 50
+                                           ; SOURCE LINE # 51
+0000 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 52
+0003 7F20              MOV     R7,#020H
+0005 120000      R     LCALL   _lcd_send_nibble
+                                           ; SOURCE LINE # 53
+0008 7F28              MOV     R7,#028H
+000A 120000      R     LCALL   _lcd_cmd
+                                           ; SOURCE LINE # 55
+000D 7F0E              MOV     R7,#0EH
+000F 120000      R     LCALL   _lcd_cmd
+                                           ; SOURCE LINE # 56
+0012 7F06              MOV     R7,#06H
+0014 120000      R     LCALL   _lcd_cmd
+                                           ; SOURCE LINE # 57
+0017 7F01              MOV     R7,#01H
+0019 120000      R     LCALL   _lcd_cmd
+                                           ; SOURCE LINE # 58
+001C 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 59
+001F 020000      R     LJMP    delay
+             ; FUNCTION lcd_init (END)
+
+             ; FUNCTION _lcd_puts (BEGIN)
+                                           ; SOURCE LINE # 62
+0000 8B00        R     MOV     str,R3
+0002 8A00        R     MOV     str+01H,R2
+0004 8900        R     MOV     str+02H,R1
+                                           ; SOURCE LINE # 63
+                                           ; SOURCE LINE # 64
+0006 E4                CLR     A
+0007 F500        R     MOV     i,A
+0009 F500        R     MOV     i+01H,A
+000B         ?C0019:
+                                           ; SOURCE LINE # 66
+000B AB00        R     MOV     R3,str
+000D AA00        R     MOV     R2,str+01H
+000F A900        R     MOV     R1,str+02H
+0011 850082      R     MOV     DPL,i+01H
+0014 850083      R     MOV     DPH,i
+0017 120000      E     LCALL   ?C?CLDOPTR
+001A FF                MOV     R7,A
+001B 600D              JZ      ?C0021
+                                           ; SOURCE LINE # 67
+                                           ; SOURCE LINE # 68
+001D 120000      R     LCALL   _lcd_data
+                                           ; SOURCE LINE # 69
+0020 0500        R     INC     i+01H
+0022 E500        R     MOV     A,i+01H
+0024 70E5              JNZ     ?C0019
+0026 0500        R     INC     i
+0028         ?C0060:
+                                           ; SOURCE LINE # 70
+0028 80E1              SJMP    ?C0019
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 8   
+
+                                           ; SOURCE LINE # 71
+002A         ?C0021:
+002A 22                RET     
+             ; FUNCTION _lcd_puts (END)
+
+             ; FUNCTION L?0066 (BEGIN)
+0000         L?0067:
+0000 AD00        R     MOV     R5,col
+0002 AF00        R     MOV     R7,row
+             ; FUNCTION _lcd_goto (BEGIN)
+                                           ; SOURCE LINE # 72
+;---- Variable 'col' assigned to Register 'R2' ----
+0004 AA05              MOV     R2,AR5
+;---- Variable 'row' assigned to Register 'R1' ----
+0006 A907              MOV     R1,AR7
+                                           ; SOURCE LINE # 73
+0008 B90107            CJNE    R1,#01H,?C0022
+                                           ; SOURCE LINE # 74
+000B EA                MOV     A,R2
+000C 247F              ADD     A,#07FH
+000E FF                MOV     R7,A
+000F 120000      R     LCALL   _lcd_cmd
+0012         ?C0022:
+                                           ; SOURCE LINE # 75
+0012 B90207            CJNE    R1,#02H,?C0024
+                                           ; SOURCE LINE # 76
+0015 EA                MOV     A,R2
+0016 24BF              ADD     A,#0BFH
+0018 FF                MOV     R7,A
+0019 120000      R     LCALL   _lcd_cmd
+                                           ; SOURCE LINE # 77
+001C         ?C0024:
+001C 22                RET     
+             ; FUNCTION _lcd_goto (END)
+
+             ; FUNCTION check_button (BEGIN)
+                                           ; SOURCE LINE # 79
+                                           ; SOURCE LINE # 80
+                                           ; SOURCE LINE # 82
+0000 C2A3              CLR     UP_ROW
+                                           ; SOURCE LINE # 83
+0002 D2A2              SETB    DOWN_ROW
+                                           ; SOURCE LINE # 84
+0004 D2A1              SETB    LEFT_ROW
+                                           ; SOURCE LINE # 85
+0006 D2A0              SETB    RIGHT_ROW
+                                           ; SOURCE LINE # 87
+0008 D2A7              SETB    COL
+                                           ; SOURCE LINE # 89
+000A 20A70C            JB      COL,?C0025
+                                           ; SOURCE LINE # 90
+                                           ; SOURCE LINE # 91
+000D 120000      R     LCALL   delay_button
+                                           ; SOURCE LINE # 93
+0010 20A706            JB      COL,?C0025
+                                           ; SOURCE LINE # 94
+0013         ?C0027:
+                                           ; SOURCE LINE # 95
+0013 30A7FD            JNB     COL,?C0027
+                                           ; SOURCE LINE # 97
+0016 7F01              MOV     R7,#01H
+0018 22                RET     
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 9   
+
+                                           ; SOURCE LINE # 98
+                                           ; SOURCE LINE # 99
+0019         ?C0025:
+                                           ; SOURCE LINE # 102
+0019 D2A3              SETB    UP_ROW
+                                           ; SOURCE LINE # 103
+001B C2A2              CLR     DOWN_ROW
+                                           ; SOURCE LINE # 104
+001D D2A1              SETB    LEFT_ROW
+                                           ; SOURCE LINE # 105
+001F D2A0              SETB    RIGHT_ROW
+                                           ; SOURCE LINE # 107
+0021 D2A7              SETB    COL
+                                           ; SOURCE LINE # 109
+0023 20A70C            JB      COL,?C0030
+                                           ; SOURCE LINE # 110
+                                           ; SOURCE LINE # 111
+0026 120000      R     LCALL   delay_button
+                                           ; SOURCE LINE # 113
+0029 20A706            JB      COL,?C0030
+                                           ; SOURCE LINE # 114
+002C         ?C0032:
+                                           ; SOURCE LINE # 115
+002C 30A7FD            JNB     COL,?C0032
+                                           ; SOURCE LINE # 117
+002F 7F02              MOV     R7,#02H
+0031 22                RET     
+                                           ; SOURCE LINE # 118
+                                           ; SOURCE LINE # 119
+0032         ?C0030:
+                                           ; SOURCE LINE # 121
+0032 D2A3              SETB    UP_ROW
+                                           ; SOURCE LINE # 122
+0034 D2A2              SETB    DOWN_ROW
+                                           ; SOURCE LINE # 123
+0036 C2A1              CLR     LEFT_ROW
+                                           ; SOURCE LINE # 124
+0038 D2A0              SETB    RIGHT_ROW
+                                           ; SOURCE LINE # 126
+003A D2A7              SETB    COL
+                                           ; SOURCE LINE # 128
+003C 20A70C            JB      COL,?C0034
+                                           ; SOURCE LINE # 129
+                                           ; SOURCE LINE # 130
+003F 120000      R     LCALL   delay_button
+                                           ; SOURCE LINE # 132
+0042 20A706            JB      COL,?C0034
+                                           ; SOURCE LINE # 133
+0045         ?C0036:
+                                           ; SOURCE LINE # 134
+0045 30A7FD            JNB     COL,?C0036
+                                           ; SOURCE LINE # 136
+0048 7F03              MOV     R7,#03H
+004A 22                RET     
+                                           ; SOURCE LINE # 137
+                                           ; SOURCE LINE # 138
+004B         ?C0034:
+                                           ; SOURCE LINE # 140
+004B D2A3              SETB    UP_ROW
+                                           ; SOURCE LINE # 141
+004D D2A2              SETB    DOWN_ROW
+                                           ; SOURCE LINE # 142
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 10  
+
+004F D2A1              SETB    LEFT_ROW
+                                           ; SOURCE LINE # 143
+0051 C2A0              CLR     RIGHT_ROW
+                                           ; SOURCE LINE # 145
+0053 D2A7              SETB    COL
+                                           ; SOURCE LINE # 147
+0055 20A70C            JB      COL,?C0038
+                                           ; SOURCE LINE # 148
+                                           ; SOURCE LINE # 149
+0058 120000      R     LCALL   delay_button
+                                           ; SOURCE LINE # 151
+005B 20A706            JB      COL,?C0038
+                                           ; SOURCE LINE # 152
+005E         ?C0040:
+                                           ; SOURCE LINE # 153
+005E 30A7FD            JNB     COL,?C0040
+                                           ; SOURCE LINE # 155
+0061 7F04              MOV     R7,#04H
+0063 22                RET     
+                                           ; SOURCE LINE # 156
+                                           ; SOURCE LINE # 157
+0064         ?C0038:
+                                           ; SOURCE LINE # 160
+0064 7F00              MOV     R7,#00H
+                                           ; SOURCE LINE # 161
+0066         ?C0029:
+0066 22                RET     
+             ; FUNCTION check_button (END)
+
+             ; FUNCTION main (BEGIN)
+                                           ; SOURCE LINE # 163
+                                           ; SOURCE LINE # 164
+0000 750041      R     MOV     save,#041H
+                                           ; SOURCE LINE # 166
+0003 750001      R     MOV     row,#01H
+                                           ; SOURCE LINE # 167
+0006 750001      R     MOV     col,#01H
+                                           ; SOURCE LINE # 168
+0009 D2A3              SETB    UP_ROW
+                                           ; SOURCE LINE # 169
+000B D2A2              SETB    DOWN_ROW
+                                           ; SOURCE LINE # 170
+000D D2A1              SETB    LEFT_ROW
+                                           ; SOURCE LINE # 171
+000F D2A0              SETB    RIGHT_ROW
+                                           ; SOURCE LINE # 172
+0011 D2A7              SETB    COL
+                                           ; SOURCE LINE # 173
+0013 120000      R     LCALL   lcd_init
+                                           ; SOURCE LINE # 174
+0016 AF00        R     MOV     R7,save
+0018 120000      R     LCALL   _lcd_data
+                                           ; SOURCE LINE # 176
+001B 7D01              MOV     R5,#01H
+001D 7F02              MOV     R7,#02H
+001F 120000      R     LCALL   _lcd_goto
+                                           ; SOURCE LINE # 177
+0022 7BFF              MOV     R3,#0FFH
+0024 7A00        R     MOV     R2,#HIGH ?SC_0
+0026 7900        R     MOV     R1,#LOW ?SC_0
+0028 120000      R     LCALL   _lcd_puts
+                                           ; SOURCE LINE # 179
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 11  
+
+002B 120000      R     LCALL   L?0066
+002E         ?C0042:
+                                           ; SOURCE LINE # 180
+                                           ; SOURCE LINE # 181
+                                           ; SOURCE LINE # 182
+002E 120000      R     LCALL   check_button
+0031 8F00        R     MOV     button,R7
+                                           ; SOURCE LINE # 184
+0033 E500        R     MOV     A,button
+0035 6401              XRL     A,#01H
+0037 700E              JNZ     ?C0044
+                                           ; SOURCE LINE # 185
+                                           ; SOURCE LINE # 186
+0039 E500        R     MOV     A,row
+003B D3                SETB    C
+003C 9401              SUBB    A,#01H
+003E 40EE              JC      ?C0042
+                                           ; SOURCE LINE # 187
+                                           ; SOURCE LINE # 189
+0040 120000      R     LCALL   L?0063
+                                           ; SOURCE LINE # 190
+0043 1500        R     DEC     row
+                                           ; SOURCE LINE # 191
+                                           ; SOURCE LINE # 192
+                                           ; SOURCE LINE # 193
+                                           ; SOURCE LINE # 194
+0045 8026              SJMP    ?C0062
+0047         ?C0044:
+                                           ; SOURCE LINE # 196
+0047 E500        R     MOV     A,button
+0049 6402              XRL     A,#02H
+004B 700E              JNZ     ?C0047
+                                           ; SOURCE LINE # 197
+                                           ; SOURCE LINE # 198
+004D E500        R     MOV     A,row
+004F C3                CLR     C
+0050 9402              SUBB    A,#02H
+0052 50DA              JNC     ?C0042
+                                           ; SOURCE LINE # 199
+                                           ; SOURCE LINE # 201
+0054 120000      R     LCALL   L?0063
+                                           ; SOURCE LINE # 202
+0057 0500        R     INC     row
+                                           ; SOURCE LINE # 204
+0059         ?C0061:
+                                           ; SOURCE LINE # 205
+                                           ; SOURCE LINE # 207
+                                           ; SOURCE LINE # 208
+0059 8012              SJMP    ?C0062
+005B         ?C0047:
+                                           ; SOURCE LINE # 210
+005B E500        R     MOV     A,button
+005D 6403              XRL     A,#03H
+005F 7016              JNZ     ?C0050
+                                           ; SOURCE LINE # 211
+                                           ; SOURCE LINE # 212
+0061 E500        R     MOV     A,col
+0063 D3                SETB    C
+0064 9401              SUBB    A,#01H
+0066 40C6              JC      ?C0042
+                                           ; SOURCE LINE # 213
+                                           ; SOURCE LINE # 214
+C51 COMPILER V9.60.7.0   NEWLCD                                                            08/31/2026 21:50:09 PAGE 12  
+
+0068 120000      R     LCALL   L?0064
+                                           ; SOURCE LINE # 215
+006B 1500        R     DEC     col
+                                           ; SOURCE LINE # 217
+006D         ?C0062:
+006D 120000      R     LCALL   L?0066
+                                           ; SOURCE LINE # 218
+0070 AF00        R     MOV     R7,save
+0072 120000      R     LCALL   _lcd_data
+                                           ; SOURCE LINE # 220
+                                           ; SOURCE LINE # 221
+0075 80B7              SJMP    ?C0042
+0077         ?C0050:
+                                           ; SOURCE LINE # 223
+0077 E500        R     MOV     A,button
+0079 6404              XRL     A,#04H
+007B 70B1              JNZ     ?C0042
+                                           ; SOURCE LINE # 224
+                                           ; SOURCE LINE # 225
+007D E500        R     MOV     A,col
+007F C3                CLR     C
+0080 9410              SUBB    A,#010H
+0082 50AA              JNC     ?C0042
+                                           ; SOURCE LINE # 226
+                                           ; SOURCE LINE # 227
+0084 120000      R     LCALL   L?0064
+                                           ; SOURCE LINE # 228
+0087 0500        R     INC     col
+                                           ; SOURCE LINE # 229
+0089 120000      R     LCALL   L?0067
+                                           ; SOURCE LINE # 230
+008C AF00        R     MOV     R7,save
+008E 120000      R     LCALL   _lcd_data
+                                           ; SOURCE LINE # 231
+                                           ; SOURCE LINE # 232
+                                           ; SOURCE LINE # 233
+0091 020000      R     LJMP    ?C0042
+             ; FUNCTION main (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    473    ----
+   CONSTANT SIZE    =      6    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----       9
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
