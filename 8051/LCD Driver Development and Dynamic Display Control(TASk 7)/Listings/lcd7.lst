@@ -1,0 +1,456 @@
+C51 COMPILER V9.60.7.0   LCD7                                                              08/31/2026 20:50:38 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE LCD7
+OBJECT MODULE PLACED IN .\Objects\lcd7.obj
+COMPILER INVOKED BY: C:\Users\ndars\C51\BIN\C51.EXE lcd7.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND PRINT(.\Listings\
+                    -lcd7.lst) TABS(2) OBJECT(.\Objects\lcd7.obj)
+
+line level    source
+
+   1          /*#include <reg51.h>
+   2          
+   3          #define LCD_PORT P3
+   4          
+   5          
+   6          /* =========================================================
+   7             LCD CONNECTIONS
+   8             ========================================================= */
+   9          
+  10          sbit RS = P3^2;
+*** ERROR C202 IN LINE 10 OF lcd7.c: 'P3': undefined identifier
+  11          sbit E  = P3^3;
+*** ERROR C202 IN LINE 11 OF lcd7.c: 'P3': undefined identifier
+  12          
+  13          
+  14          /* =========================================================
+  15             BUTTON CONNECTIONS
+  16             ========================================================= */
+  17          
+  18          sbit UP_ROW    = P2^3;
+*** ERROR C202 IN LINE 18 OF lcd7.c: 'P2': undefined identifier
+  19          sbit DOWN_ROW  = P2^2;
+*** ERROR C202 IN LINE 19 OF lcd7.c: 'P2': undefined identifier
+  20          sbit LEFT_ROW  = P2^1;
+*** ERROR C202 IN LINE 20 OF lcd7.c: 'P2': undefined identifier
+  21          sbit RIGHT_ROW = P2^0;
+*** ERROR C202 IN LINE 21 OF lcd7.c: 'P2': undefined identifier
+  22          
+  23          sbit COL = P2^7;
+*** ERROR C202 IN LINE 23 OF lcd7.c: 'P2': undefined identifier
+  24          
+  25          
+  26          /* =========================================================
+  27             DELAY
+  28             ========================================================= */
+  29          
+  30          void delay_ms()
+  31          {
+  32   1          unsigned int i, j;
+  33   1      
+  34   1          for(i = 0; i < 10; i++)
+  35   1          {
+  36   2              for(j = 0; j < 10; j++);
+  37   2          }
+  38   1      }
+  39          
+  40          
+  41          /* =========================================================
+  42             LCD ENABLE
+  43             ========================================================= */
+  44          
+  45          void lcd_enable()
+  46          {
+  47   1          E = 1;
+C51 COMPILER V9.60.7.0   LCD7                                                              08/31/2026 20:50:38 PAGE 2   
+
+*** ERROR C202 IN LINE 47 OF lcd7.c: 'E': undefined identifier
+  48   1          delay_ms();
+  49   1          E = 0;
+*** ERROR C202 IN LINE 49 OF lcd7.c: 'E': undefined identifier
+  50   1          delay_ms();
+  51   1      }
+  52          
+  53          
+  54          /* =========================================================
+  55             SEND 4-BIT NIBBLE
+  56             ========================================================= */
+  57          
+  58          void lcd_send_nibble(unsigned char nibble)
+  59          {
+  60   1          LCD_PORT = (LCD_PORT & 0x0F) | (nibble & 0xF0);
+*** ERROR C202 IN LINE 60 OF lcd7.c: 'LCD_PORT': undefined identifier
+  61   1      
+  62   1          lcd_enable();
+  63   1      }
+  64          
+  65          
+  66          /* =========================================================
+  67             SEND LCD COMMAND
+  68             ========================================================= */
+  69          
+  70          void lcd_cmd(unsigned char cmd)
+  71          {
+  72   1          RS = 0;
+*** ERROR C202 IN LINE 72 OF lcd7.c: 'RS': undefined identifier
+  73   1      
+  74   1          /* Higher nibble */
+  75   1          lcd_send_nibble(cmd);
+  76   1      
+  77   1          /* Lower nibble */
+  78   1          lcd_send_nibble(cmd << 4);
+  79   1      
+  80   1          delay_ms();
+  81   1      }
+  82          
+  83          
+  84          /* =========================================================
+  85             SEND LCD DATA
+  86             ========================================================= */
+  87          
+  88          void lcd_data(unsigned char datas)
+  89          {
+  90   1          RS = 1;
+*** ERROR C202 IN LINE 90 OF lcd7.c: 'RS': undefined identifier
+  91   1      
+  92   1          /* Higher nibble */
+  93   1          lcd_send_nibble(datas);
+  94   1      
+  95   1          /* Lower nibble */
+  96   1          lcd_send_nibble(datas << 4);
+  97   1      
+  98   1          delay_ms();
+  99   1      }
+ 100          
+ 101          
+ 102          /* =========================================================
+ 103             LCD INITIALIZATION
+ 104             ========================================================= */
+C51 COMPILER V9.60.7.0   LCD7                                                              08/31/2026 20:50:38 PAGE 3   
+
+ 105          
+ 106          void lcd_init()
+ 107          {
+ 108   1          RS = 0;
+*** ERROR C202 IN LINE 108 OF lcd7.c: 'RS': undefined identifier
+ 109   1          E = 0;
+*** ERROR C202 IN LINE 109 OF lcd7.c: 'E': undefined identifier
+ 110   1      
+ 111   1          delay_ms();
+ 112   1      
+ 113   1          /* 4-bit initialization sequence */
+ 114   1      
+ 115   1          lcd_send_nibble(0x30);
+ 116   1          delay_ms();
+ 117   1      
+ 118   1          lcd_send_nibble(0x30);
+ 119   1          delay_ms();
+ 120   1      
+ 121   1          lcd_send_nibble(0x30);
+ 122   1          delay_ms();
+ 123   1      
+ 124   1          lcd_send_nibble(0x20);
+ 125   1          delay_ms();
+ 126   1      
+ 127   1      
+ 128   1          /* 4-bit, 2-line, 5x8 font */
+ 129   1      
+ 130   1          lcd_cmd(0x28);
+ 131   1      
+ 132   1      
+ 133   1          /* Display ON, Cursor ON, Blink ON */
+ 134   1      
+ 135   1          lcd_cmd(0x0F);
+ 136   1      
+ 137   1      
+ 138   1          /* Cursor moves right */
+ 139   1      
+ 140   1          lcd_cmd(0x06);
+ 141   1      
+ 142   1      
+ 143   1          /* Clear display */
+ 144   1      
+ 145   1          lcd_cmd(0x01);
+ 146   1      
+ 147   1          delay_ms();
+ 148   1      }
+ 149          
+ 150          
+ 151          /* =========================================================
+ 152             MOVE LCD CURSOR
+ 153             ========================================================= */
+ 154          
+ 155          void lcd_goto(unsigned char row, unsigned char col)
+ 156          {
+ 157   1          unsigned char address;
+ 158   1      
+ 159   1          if(row == 1)
+ 160   1          {
+ 161   2              address = col - 1;
+ 162   2          }
+ 163   1          else
+ 164   1          {
+C51 COMPILER V9.60.7.0   LCD7                                                              08/31/2026 20:50:38 PAGE 4   
+
+ 165   2              address = 0x40 + (col - 1);
+ 166   2          }
+ 167   1      
+ 168   1          lcd_cmd(0x80 | address);
+ 169   1      }
+ 170          
+ 171          
+ 172          /* =========================================================
+ 173             CHECK BUTTON
+ 174             ========================================================= */
+ 175          
+ 176          unsigned char check_button()
+ 177          {
+ 178   1          /* =====================================================
+ 179   1             UP
+ 180   1             ===================================================== */
+ 181   1      
+ 182   1          UP_ROW = 0;
+*** ERROR C202 IN LINE 182 OF lcd7.c: 'UP_ROW': undefined identifier
+ 183   1          DOWN_ROW = 1;
+*** ERROR C202 IN LINE 183 OF lcd7.c: 'DOWN_ROW': undefined identifier
+ 184   1          LEFT_ROW = 1;
+*** ERROR C202 IN LINE 184 OF lcd7.c: 'LEFT_ROW': undefined identifier
+ 185   1          RIGHT_ROW = 1;
+*** ERROR C202 IN LINE 185 OF lcd7.c: 'RIGHT_ROW': undefined identifier
+ 186   1      
+ 187   1          COL = 1;
+*** ERROR C202 IN LINE 187 OF lcd7.c: 'COL': undefined identifier
+ 188   1      
+ 189   1          if(COL == 0)
+*** ERROR C202 IN LINE 189 OF lcd7.c: 'COL': undefined identifier
+ 190   1          {
+ 191   2              delay_ms();
+ 192   2      
+ 193   2              if(COL == 0)
+*** ERROR C202 IN LINE 193 OF lcd7.c: 'COL': undefined identifier
+ 194   2              {
+ 195   3                  while(COL == 0);
+*** ERROR C202 IN LINE 195 OF lcd7.c: 'COL': undefined identifier
+ 196   3      
+ 197   3                  return 1;
+ 198   3              }
+ 199   2          }
+ 200   1      
+ 201   1      
+ 202   1          /* =====================================================
+ 203   1             DOWN
+ 204   1             ===================================================== */
+ 205   1      
+ 206   1          UP_ROW = 1;
+*** ERROR C202 IN LINE 206 OF lcd7.c: 'UP_ROW': undefined identifier
+ 207   1          DOWN_ROW = 0;
+*** ERROR C202 IN LINE 207 OF lcd7.c: 'DOWN_ROW': undefined identifier
+ 208   1          LEFT_ROW = 1;
+*** ERROR C202 IN LINE 208 OF lcd7.c: 'LEFT_ROW': undefined identifier
+ 209   1          RIGHT_ROW = 1;
+*** ERROR C202 IN LINE 209 OF lcd7.c: 'RIGHT_ROW': undefined identifier
+ 210   1      
+ 211   1          COL = 1;
+*** ERROR C202 IN LINE 211 OF lcd7.c: 'COL': undefined identifier
+ 212   1      
+ 213   1          if(COL == 0)
+C51 COMPILER V9.60.7.0   LCD7                                                              08/31/2026 20:50:38 PAGE 5   
+
+*** ERROR C202 IN LINE 213 OF lcd7.c: 'COL': undefined identifier
+ 214   1          {
+ 215   2              delay_ms();
+ 216   2      
+ 217   2              if(COL == 0)
+*** ERROR C202 IN LINE 217 OF lcd7.c: 'COL': undefined identifier
+ 218   2              {
+ 219   3                  while(COL == 0);
+*** ERROR C202 IN LINE 219 OF lcd7.c: 'COL': undefined identifier
+ 220   3      
+ 221   3                  return 2;
+ 222   3              }
+ 223   2          }
+ 224   1      
+ 225   1      
+ 226   1          /* =====================================================
+ 227   1             LEFT
+ 228   1             ===================================================== */
+ 229   1      
+ 230   1          UP_ROW = 1;
+*** ERROR C202 IN LINE 230 OF lcd7.c: 'UP_ROW': undefined identifier
+ 231   1          DOWN_ROW = 1;
+*** ERROR C202 IN LINE 231 OF lcd7.c: 'DOWN_ROW': undefined identifier
+ 232   1          LEFT_ROW = 0;
+*** ERROR C202 IN LINE 232 OF lcd7.c: 'LEFT_ROW': undefined identifier
+ 233   1          RIGHT_ROW = 1;
+*** ERROR C202 IN LINE 233 OF lcd7.c: 'RIGHT_ROW': undefined identifier
+ 234   1      
+ 235   1          COL = 1;
+*** ERROR C202 IN LINE 235 OF lcd7.c: 'COL': undefined identifier
+ 236   1      
+ 237   1          if(COL == 0)
+*** ERROR C202 IN LINE 237 OF lcd7.c: 'COL': undefined identifier
+ 238   1          {
+ 239   2              delay_ms();
+ 240   2      
+ 241   2              if(COL == 0)
+*** ERROR C202 IN LINE 241 OF lcd7.c: 'COL': undefined identifier
+ 242   2              {
+ 243   3                  while(COL == 0);
+*** ERROR C202 IN LINE 243 OF lcd7.c: 'COL': undefined identifier
+ 244   3      
+ 245   3                  return 3;
+ 246   3              }
+ 247   2          }
+ 248   1      
+ 249   1      
+ 250   1          /* =====================================================
+ 251   1             RIGHT
+ 252   1             ===================================================== */
+ 253   1      
+ 254   1          UP_ROW = 1;
+*** ERROR C202 IN LINE 254 OF lcd7.c: 'UP_ROW': undefined identifier
+ 255   1          DOWN_ROW = 1;
+*** ERROR C202 IN LINE 255 OF lcd7.c: 'DOWN_ROW': undefined identifier
+ 256   1          LEFT_ROW = 1;
+*** ERROR C202 IN LINE 256 OF lcd7.c: 'LEFT_ROW': undefined identifier
+ 257   1          RIGHT_ROW = 0;
+*** ERROR C202 IN LINE 257 OF lcd7.c: 'RIGHT_ROW': undefined identifier
+ 258   1      
+ 259   1          COL = 1;
+*** ERROR C202 IN LINE 259 OF lcd7.c: 'COL': undefined identifier
+C51 COMPILER V9.60.7.0   LCD7                                                              08/31/2026 20:50:38 PAGE 6   
+
+ 260   1      
+ 261   1          if(COL == 0)
+*** ERROR C202 IN LINE 261 OF lcd7.c: 'COL': undefined identifier
+ 262   1          {
+ 263   2              delay_ms();
+ 264   2      
+ 265   2              if(COL == 0)
+*** ERROR C202 IN LINE 265 OF lcd7.c: 'COL': undefined identifier
+ 266   2              {
+ 267   3                  while(COL == 0);
+*** ERROR C202 IN LINE 267 OF lcd7.c: 'COL': undefined identifier
+ 268   3      
+ 269   3                  return 4;
+ 270   3              }
+ 271   2          }
+ 272   1      
+ 273   1      
+ 274   1          return 0;
+ 275   1      }
+ 276          
+ 277          
+ 278          /* =========================================================
+ 279             MAIN
+ 280             ========================================================= */
+ 281          
+ 282          void main()
+ 283          {
+ 284   1          unsigned char button;
+ 285   1      
+ 286   1          unsigned char row = 1;
+ 287   1          unsigned char col = 1;
+ 288   1      
+ 289   1      
+ 290   1          /* Initialize buttons */
+ 291   1      
+ 292   1          UP_ROW = 1;
+*** ERROR C202 IN LINE 292 OF lcd7.c: 'UP_ROW': undefined identifier
+ 293   1          DOWN_ROW = 1;
+*** ERROR C202 IN LINE 293 OF lcd7.c: 'DOWN_ROW': undefined identifier
+ 294   1          LEFT_ROW = 1;
+*** ERROR C202 IN LINE 294 OF lcd7.c: 'LEFT_ROW': undefined identifier
+ 295   1          RIGHT_ROW = 1;
+*** ERROR C202 IN LINE 295 OF lcd7.c: 'RIGHT_ROW': undefined identifier
+ 296   1      
+ 297   1          COL = 1;
+*** ERROR C202 IN LINE 297 OF lcd7.c: 'COL': undefined identifier
+ 298   1      
+ 299   1      
+ 300   1          /* Initialize LCD */
+ 301   1      
+ 302   1          lcd_init();
+ 303   1      
+ 304   1      
+ 305   1          /* Clear LCD before use */
+ 306   1          
+ 307   1          lcd_cmd(0x01);
+ 308   1      
+ 309   1          /* Start cursor at row 1, column 1 */
+ 310   1      
+ 311   1          lcd_goto(row, col);
+ 312   1      
+ 313   1      
+C51 COMPILER V9.60.7.0   LCD7                                                              08/31/2026 20:50:38 PAGE 7   
+
+ 314   1          while(1)
+ 315   1          {
+ 316   2              button = check_button();
+ 317   2      
+ 318   2      
+ 319   2              /* =================================================
+ 320   2                 UP
+ 321   2                 ================================================= */
+ 322   2      
+ 323   2              if(button == 1)
+ 324   2              {
+ 325   3                  if(row > 1)
+ 326   3                  {
+ 327   4                      row--;
+ 328   4      
+ 329   4                      lcd_goto(row, col);
+ 330   4                  }
+ 331   3              }
+ 332   2      
+ 333   2      
+ 334   2              /* =================================================
+ 335   2                 DOWN
+ 336   2                 ================================================= */
+ 337   2      
+ 338   2              else if(button == 2)
+ 339   2              {
+ 340   3                  if(row < 2)
+ 341   3                  {
+ 342   4                      row++;
+ 343   4      
+ 344   4                      lcd_goto(row, col);
+ 345   4                  }
+ 346   3              }
+ 347   2      
+ 348   2      
+ 349   2              /* =================================================
+ 350   2                 LEFT
+ 351   2                 ================================================= */
+ 352   2      
+ 353   2              else if(button == 3)
+ 354   2              {
+ 355   3                  if(col > 1)
+ 356   3                  {
+ 357   4                      col--;
+ 358   4      
+ 359   4                      lcd_goto(row, col);
+ 360   4                  }
+ 361   3              }
+ 362   2      
+ 363   2      
+ 364   2              /* =================================================
+ 365   2                 RIGHT
+ 366   2                 ================================================= */
+ 367   2      
+ 368   2              else if(button == 4)
+ 369   2              {
+ 370   3                  if(col < 16)
+ 371   3                  {
+ 372   4                      col++;
+ 373   4      
+ 374   4                      lcd_goto(row, col);
+ 375   4                  }
+C51 COMPILER V9.60.7.0   LCD7                                                              08/31/2026 20:50:38 PAGE 8   
+
+ 376   3              }
+ 377   2          }
+ 378   1      }*/
+*** ERROR C141 IN LINE 378 OF lcd7.c: syntax error near '/', expected 'hdata'
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  52 ERROR(S)
