@@ -1,0 +1,22 @@
+--cpu Cortex-M3
+"wificomplete\startup_stm32f103xb.o"
+"wificomplete\main.o"
+"wificomplete\stm32f1xx_it.o"
+"wificomplete\stm32f1xx_hal_msp.o"
+"wificomplete\stm32f1xx_hal_gpio_ex.o"
+"wificomplete\stm32f1xx_hal_uart.o"
+"wificomplete\stm32f1xx_hal.o"
+"wificomplete\stm32f1xx_hal_rcc.o"
+"wificomplete\stm32f1xx_hal_rcc_ex.o"
+"wificomplete\stm32f1xx_hal_gpio.o"
+"wificomplete\stm32f1xx_hal_dma.o"
+"wificomplete\stm32f1xx_hal_cortex.o"
+"wificomplete\stm32f1xx_hal_pwr.o"
+"wificomplete\stm32f1xx_hal_flash.o"
+"wificomplete\stm32f1xx_hal_flash_ex.o"
+"wificomplete\stm32f1xx_hal_exti.o"
+"wificomplete\system_stm32f1xx.o"
+--strict --scatter "wificomplete\wificomplete.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "wificomplete.map" -o wificomplete\wificomplete.axf
