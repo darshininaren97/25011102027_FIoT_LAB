@@ -142,14 +142,7 @@ void http_server(void)
                             "\r\n"
                             "Dr.Dinesh is GREAT!!!";
 											
-											char D1[] =
-                            "HTTP/1.1 200 OK\r\n"
-                            "Content-Type: text/plain\r\n"
-                            "Content-Length: 21\r\n"
-                            "Connection: close\r\n"
-                            "\r\n"
-                            "Counter= %d",count;
-											count++;
+											
                         char cmd[32];
 
                         snprintf(cmd, sizeof(cmd),
