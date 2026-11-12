@@ -55,6 +55,9 @@ The pin is configured as an output by writing directly to the port register.
 A simple **software delay loop** is used instead of hardware timers to create a visible blinking effect.
 
 ---
+## Circuit Diagram
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/dde72273-48bf-4edf-ac43-d4b6560544f1" />
+
 
 ## Program Logic  
 1. Initialize LED pin  
