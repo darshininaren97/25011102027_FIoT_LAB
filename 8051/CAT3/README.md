@@ -152,6 +152,8 @@ while(1){
     }
     delay();
 }
+##Circuit Diagram
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/78622793-a741-43f0-975b-2b4a9472af49" />
 
 
 ## Key Improvement
