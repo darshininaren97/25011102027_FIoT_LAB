@@ -154,7 +154,8 @@ while(1){
 }
 
 ## Circuit Diagram
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/dab3c48a-cb5a-46b4-a245-c46c0fda7630" />
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/c6703a84-cde8-4ed0-a6ab-a6722995e0b2" />
+
 
 
 
