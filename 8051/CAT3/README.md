@@ -152,11 +152,14 @@ while(1){
     }
     delay();
 }
-##Circuit Diagram
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/78622793-a741-43f0-975b-2b4a9472af49" />
+
+## Circuit Diagram
+<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/dab3c48a-cb5a-46b4-a245-c46c0fda7630" />
+
 
 
 ## Key Improvement
+
 
 This change ensures:
 - Immediate response to button press
