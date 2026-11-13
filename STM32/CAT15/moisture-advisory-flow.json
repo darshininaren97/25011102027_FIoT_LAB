@@ -1,0 +1,403 @@
+[
+    {
+        "id": "d287c8679ecf4a01",
+        "type": "tab",
+        "label": "Moisture Advisory",
+        "disabled": false,
+        "info": "Open http://localhost:1880/board\n\nSet OWM_KEY in this tab's Properties > Environment variables.",
+        "env": [
+            {
+                "name": "OWM_KEY",
+                "value": "",
+                "type": "str"
+            },
+            {
+                "name": "OWM_CITY",
+                "value": "Chennai",
+                "type": "str"
+            }
+        ]
+    },
+    {
+        "id": "6dcf5ee65b614e7c",
+        "type": "comment",
+        "z": "d287c8679ecf4a01",
+        "name": "Open the dashboard at  http://localhost:1880/board   |   Set OWM_KEY in this tab's properties (double-click the tab > Environment variables)",
+        "info": "",
+        "x": 440,
+        "y": 30,
+        "wires": []
+    },
+    {
+        "id": "7a84f57918274395",
+        "type": "comment",
+        "z": "d287c8679ecf4a01",
+        "name": "A) Indoor sensor: MQTT, latest reading only",
+        "info": "",
+        "x": 230,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "930e11949542f6d9",
+        "type": "mqtt in",
+        "z": "d287c8679ecf4a01",
+        "name": "stm32/da",
+        "topic": "stm32/da",
+        "qos": "0",
+        "datatype": "auto-detect",
+        "broker": "7b7021ab901524df",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 120,
+        "y": 130,
+        "wires": [
+            [
+                "21862a7e2b99fd69"
+            ]
+        ]
+    },
+    {
+        "id": "21862a7e2b99fd69",
+        "type": "function",
+        "z": "d287c8679ecf4a01",
+        "name": "save sensor",
+        "func": "// Keep only the latest BME280 reading (no history needed)\nlet d = msg.payload;\nif (typeof d === \"string\") { try { d = JSON.parse(d); } catch (e) { return null; } }\nif (!d || typeof d !== \"object\") return null;\n\nconst t = Number(d.temperature), h = Number(d.humidity);\nlet p = Number(d.pressure);\nif (!Number.isFinite(t) || !Number.isFinite(h) || h < 0 || h > 100) {\n    node.warn(\"Ignoring bad sensor payload\");\n    return null;\n}\nif (!Number.isFinite(p)) p = null; else if (p > 20000) p = p / 100;   // Pa -> hPa\n\nflow.set(\"sensor\", { t: t, h: h, p: p, ts: Date.now() });\nnode.status({ fill: \"green\", shape: \"dot\", text: t.toFixed(1) + \"°C  \" + h.toFixed(0) + \"%\" });\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 130,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2720ef6aedeb309b",
+        "type": "comment",
+        "z": "d287c8679ecf4a01",
+        "name": "B) Outdoor now: every 10 min (API)",
+        "info": "",
+        "x": 190,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "2cebf6e9d551753f",
+        "type": "inject",
+        "z": "d287c8679ecf4a01",
+        "name": "every 10 min",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "600",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "2",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 250,
+        "wires": [
+            [
+                "d105241c79d1b55b"
+            ]
+        ]
+    },
+    {
+        "id": "d105241c79d1b55b",
+        "type": "function",
+        "z": "d287c8679ecf4a01",
+        "name": "build URL (current)",
+        "func": "// Builds the OpenWeatherMap \"current weather\" URL.\n// Key and city come from this flow tab > Properties > Environment variables.\nconst KEY  = env.get(\"OWM_KEY\");\nconst CITY = env.get(\"OWM_CITY\") || \"Chennai\";\nif (!KEY) {\n    node.warn(\"OWM_KEY is empty. Set it in the flow tab's environment variables.\");\n    node.status({ fill: \"red\", shape: \"ring\", text: \"no OWM_KEY\" });\n    return null;\n}\nmsg.url = \"https://api.openweathermap.org/data/2.5/weather?q=\" + encodeURIComponent(CITY) +\n          \"&appid=\" + encodeURIComponent(KEY) + \"&units=metric\";\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 250,
+        "wires": [
+            [
+                "a148b058772dbb47"
+            ]
+        ]
+    },
+    {
+        "id": "a148b058772dbb47",
+        "type": "http request",
+        "z": "d287c8679ecf4a01",
+        "name": "OpenWeatherMap now",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 540,
+        "y": 250,
+        "wires": [
+            [
+                "51779c0331bdda30"
+            ]
+        ]
+    },
+    {
+        "id": "51779c0331bdda30",
+        "type": "function",
+        "z": "d287c8679ecf4a01",
+        "name": "save weather",
+        "func": "const r = msg.payload;\nif (!r || Number(r.cod) !== 200 || !r.main) {\n    node.warn(\"Weather problem: \" + (r && r.message ? r.message : \"no data\"));\n    node.status({ fill: \"red\", shape: \"ring\", text: \"API error\" });\n    return null;\n}\nconst w0 = (r.weather && r.weather[0]) || {};\nflow.set(\"weather\", {\n    t: r.main.temp, h: r.main.humidity, p: r.main.pressure, feels: r.main.feels_like,\n    clouds: r.clouds ? r.clouds.all : 0, wind: r.wind ? r.wind.speed : 0,\n    desc: w0.description || \"\", main: w0.main || \"\", id: w0.id || 0,\n    night: /n$/.test(w0.icon || \"\") || (r.sys && r.dt < r.sys.sunrise) || (r.sys && r.dt > r.sys.sunset),\n    raining: [\"Rain\",\"Drizzle\",\"Thunderstorm\"].indexOf(w0.main) >= 0 || !!r.rain,\n    city: r.name, ts: Date.now()\n});\nnode.status({ fill: \"green\", shape: \"dot\", text: r.main.temp + \"°C  \" + (w0.description || \"\") });\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 740,
+        "y": 250,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "09c55ae04e0a5c07",
+        "type": "comment",
+        "z": "d287c8679ecf4a01",
+        "name": "C) Outdoor forecast: every 30 min (API)",
+        "info": "",
+        "x": 200,
+        "y": 320,
+        "wires": []
+    },
+    {
+        "id": "2a8ee8afc2e3aff1",
+        "type": "inject",
+        "z": "d287c8679ecf4a01",
+        "name": "every 30 min",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "1800",
+        "crontab": "",
+        "once": true,
+        "onceDelay": "5",
+        "topic": "",
+        "payload": "",
+        "payloadType": "date",
+        "x": 130,
+        "y": 370,
+        "wires": [
+            [
+                "5c7ef4551cf41921"
+            ]
+        ]
+    },
+    {
+        "id": "5c7ef4551cf41921",
+        "type": "function",
+        "z": "d287c8679ecf4a01",
+        "name": "build URL (forecast)",
+        "func": "// Builds the OpenWeatherMap 3-hourly forecast URL (8 steps = 24 h).\nconst KEY  = env.get(\"OWM_KEY\");\nconst CITY = env.get(\"OWM_CITY\") || \"Chennai\";\nif (!KEY) {\n    node.warn(\"OWM_KEY is empty. Set it in the flow tab's environment variables.\");\n    node.status({ fill: \"red\", shape: \"ring\", text: \"no OWM_KEY\" });\n    return null;\n}\nmsg.url = \"https://api.openweathermap.org/data/2.5/forecast?q=\" + encodeURIComponent(CITY) +\n          \"&appid=\" + encodeURIComponent(KEY) + \"&units=metric&cnt=8\";\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 370,
+        "wires": [
+            [
+                "7e83fe05e74f9375"
+            ]
+        ]
+    },
+    {
+        "id": "7e83fe05e74f9375",
+        "type": "http request",
+        "z": "d287c8679ecf4a01",
+        "name": "OpenWeatherMap forecast",
+        "method": "GET",
+        "ret": "obj",
+        "paytoqs": "ignore",
+        "url": "",
+        "tls": "",
+        "persist": false,
+        "proxy": "",
+        "insecureHTTPParser": false,
+        "authType": "",
+        "senderr": false,
+        "headers": [],
+        "x": 540,
+        "y": 370,
+        "wires": [
+            [
+                "6d79bc0b52ae60b4"
+            ]
+        ]
+    },
+    {
+        "id": "6d79bc0b52ae60b4",
+        "type": "function",
+        "z": "d287c8679ecf4a01",
+        "name": "save forecast",
+        "func": "const r = msg.payload;\nif (!r || String(r.cod) !== \"200\" || !Array.isArray(r.list)) {\n    node.warn(\"Forecast problem: \" + (r && r.message ? r.message : \"no data\"));\n    return null;\n}\nfunction ah(t, h) {\n    const e = h / 100 * 6.112 * Math.exp(17.67 * t / (t + 243.5));\n    return 216.7 * e / (273.15 + t);\n}\nconst list = r.list.slice(0, 8).map(it => {\n    const t = it.main.temp, h = it.main.humidity;\n    const m = (it.weather && it.weather[0]) || {};\n    const pop = it.pop || 0;\n    return {\n        ts: it.dt * 1000, t: t, h: h, p: it.main.pressure, ah: ah(t, h), pop: pop,\n        rain: [\"Rain\", \"Drizzle\", \"Thunderstorm\"].indexOf(m.main) >= 0 || pop >= 0.5,\n        desc: m.description || \"\"\n    };\n});\nflow.set(\"forecast\", { list: list, ts: Date.now() });\nnode.status({ fill: \"green\", shape: \"dot\", text: list.length + \" steps\" });\nreturn null;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 760,
+        "y": 370,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "279af22e0619b9e9",
+        "type": "comment",
+        "z": "d287c8679ecf4a01",
+        "name": "D) The dashboard page and its data feed",
+        "info": "",
+        "x": 220,
+        "y": 560,
+        "wires": []
+    },
+    {
+        "id": "e8c99a9ceeb8e180",
+        "type": "http in",
+        "z": "d287c8679ecf4a01",
+        "name": "",
+        "url": "/board",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 120,
+        "y": 610,
+        "wires": [
+            [
+                "dd9f68f9d3d3c62f"
+            ]
+        ]
+    },
+    {
+        "id": "dd9f68f9d3d3c62f",
+        "type": "template",
+        "z": "d287c8679ecf4a01",
+        "name": "dashboard page",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "html",
+        "syntax": "plain",
+        "template": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"UTF-8\">\n<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n<title>Moisture Advisory</title>\n<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Newsreader:ital,opsz,wght@0,6..72,400..600;1,6..72,400..500&display=swap\" rel=\"stylesheet\">\n<style>\n:root {\n  color-scheme: light dark;\n  --bg:#edf3f0; --panel:#f9fcfb; --ink:#10303a; --muted:#587076; --line:#d3e0dc; --strong:#a9bfba;\n  --in:#1f8b9c; --out:#5a6bd8;\n  --good:#23865f; --warn:#b4720a; --bad:#cc3d4c; --info:#2a79a6;\n  --glass:rgba(31,139,156,.06);\n  --display:\"Bricolage Grotesque\",\"Avenir Next\",\"Segoe UI\",system-ui,sans-serif;\n  --text:\"Newsreader\",Georgia,\"Times New Roman\",serif;\n}\n@media (prefers-color-scheme: dark) {\n  :root {\n    --bg:#0b1d22; --panel:#12303a; --ink:#e2eeec; --muted:#8aa5ab; --line:#234550; --strong:#3b6470;\n    --in:#4cc3d3; --out:#97a4f5;\n    --good:#4cc79d; --warn:#e3b04a; --bad:#f2707b; --info:#62b8e6;\n    --glass:rgba(76,195,211,.07);\n  }\n}\n* { box-sizing:border-box; }\nhtml { -webkit-text-size-adjust:100%; }\nbody { margin:0; background:var(--bg); color:var(--ink); font:18px/1.55 var(--text); }\n.wrap { max-width:1120px; margin:0 auto; padding:26px 20px 64px; }\nh1,h2,h3,p { margin:0; }\nbutton,input { font:inherit; color:inherit; }\n:focus-visible { outline:3px solid var(--info); outline-offset:3px; border-radius:6px; }\n[data-tone=\"good\"] { --tone:var(--good); } [data-tone=\"warn\"] { --tone:var(--warn); }\n[data-tone=\"bad\"]  { --tone:var(--bad); }  [data-tone=\"info\"] { --tone:var(--info); }\n\n/* header */\n.top { display:flex; flex-wrap:wrap; gap:14px 28px; align-items:baseline; justify-content:space-between; margin-bottom:22px; }\n.brand { font:700 22px/1 var(--display); letter-spacing:-.01em; }\n.brand small { display:block; margin-top:7px; font:400 15px/1.3 var(--text); color:var(--muted); letter-spacing:0; }\n.pills { display:flex; flex-wrap:wrap; gap:8px; font:500 14px/1 var(--display); }\n.pill { display:inline-flex; align-items:center; gap:8px; padding:9px 13px; border:1px solid var(--line); border-radius:99px; background:var(--panel); }\n.dot { width:9px; height:9px; border-radius:50%; background:var(--strong); }\n.pill[data-on=\"1\"] .dot { background:var(--good); box-shadow:0 0 0 4px color-mix(in srgb,var(--good) 22%,transparent); }\n.pill[data-on=\"0\"] .dot { background:var(--bad); }\n#offline { display:none; margin-bottom:16px; padding:12px 16px; border-radius:12px; background:color-mix(in srgb,var(--bad) 14%,var(--panel)); border:1px solid var(--bad); font:500 15px var(--display); }\n\n/* hero */\n.hero { display:grid; grid-template-columns:1.1fr 1fr; gap:36px; padding:34px; border-radius:28px; background:var(--panel); border:1px solid var(--line); }\n.hero h2 { font:800 clamp(34px,5.4vw,60px)/1.02 var(--display); letter-spacing:-.025em; color:var(--tone,var(--ink)); max-width:11em; }\n.seg { display:flex; gap:5px; margin:24px 0 8px; }\n.seg i { flex:1; height:10px; max-width:42px; border-radius:3px; background:var(--line); }\n.seg i.on { background:var(--tone); }\n.segcap { font:500 14px var(--display); color:var(--muted); }\n.factors { list-style:none; padding:0; margin:20px 0 0; display:grid; gap:10px; max-width:34em; }\n.factors li { display:grid; grid-template-columns:12px 1fr; gap:12px; align-items:baseline; font-size:17px; }\n.factors li::before { content:\"\"; width:10px; height:10px; border-radius:50%; background:var(--tone); transform:translateY(1px); }\n\n.air { display:flex; flex-direction:column; justify-content:space-between; gap:18px; }\n.air h3 { font:600 15px/1.3 var(--display); color:var(--muted); }\n.tanks { display:flex; gap:26px; justify-content:center; align-items:flex-end; }\n.tank { margin:0; width:132px; text-align:center; }\n.glass { position:relative; height:220px; border:2px solid var(--strong); border-radius:8px 8px 26px 26px; overflow:hidden; background:var(--glass); }\n.water { position:absolute; left:0; right:0; bottom:0; height:0; transition:height 1.4s cubic-bezier(.2,.8,.2,1); }\n.water::before { content:\"\"; position:absolute; left:0; right:0; top:-9px; height:10px; background-size:40px 10px; background-repeat:repeat-x; animation:drift 5s linear infinite; }\n.tank.in .water { background:#2a9db0; }\n.tank.in .water::before { background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10' viewBox='0 0 40 10'%3E%3Cpath d='M0 5Q10 0 20 5T40 5V10H0Z' fill='%232a9db0'/%3E%3C/svg%3E\"); }\n.tank.out .water { background:#6577e0; }\n.tank.out .water::before { background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='10' viewBox='0 0 40 10'%3E%3Cpath d='M0 5Q10 0 20 5T40 5V10H0Z' fill='%236577e0'/%3E%3C/svg%3E\"); }\n@keyframes drift { to { background-position-x:40px; } }\n.tick { position:absolute; left:0; right:0; border-top:1px dashed var(--strong); opacity:.7; font:500 11px/1 var(--display); color:var(--muted); }\n.tick span { position:absolute; right:6px; top:-14px; }\n.tank figcaption { margin-top:12px; }\n.tank b { display:block; font:800 34px/1 var(--display); letter-spacing:-.02em; font-variant-numeric:tabular-nums; }\n.tank b small { font:500 14px var(--display); color:var(--muted); letter-spacing:0; margin-left:3px; }\n.tank span { display:block; margin-top:4px; font:500 15px var(--display); color:var(--muted); }\n.tank.in b { color:var(--in); } .tank.out b { color:var(--out); }\n.verdict { padding:16px 18px; border-radius:16px; border:1.5px solid var(--tone,var(--line)); background:color-mix(in srgb,var(--tone,var(--line)) 9%,var(--panel)); }\n.verdict strong { display:block; font:800 24px/1.15 var(--display); letter-spacing:-.015em; color:var(--tone,var(--ink)); }\n.verdict p { margin-top:4px; font-size:16px; color:var(--muted); }\n\n/* sections */\nsection.block { margin-top:46px; }\n.block > h2 { font:700 26px/1.1 var(--display); letter-spacing:-.015em; }\n.block > .sub { margin-top:6px; color:var(--muted); font-size:16px; max-width:46em; }\n.recs { list-style:none; padding:0; margin:20px 0 0; display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); }\n.rec { display:grid; grid-template-columns:34px 1fr; gap:14px; padding:16px 18px; border-radius:16px; background:var(--panel); border:1px solid var(--line); border-left:5px solid var(--tone); }\n.rec .ic { width:34px; height:34px; border-radius:50%; display:grid; place-items:center; font:800 17px var(--display); color:var(--panel); background:var(--tone); }\n.rec h3 { font:700 18px/1.25 var(--display); letter-spacing:-.005em; }\n.rec p { margin-top:3px; font-size:16px; color:var(--muted); }\n\n.charthead { display:flex; flex-wrap:wrap; gap:12px 24px; align-items:end; justify-content:space-between; }\n.toggle { display:inline-flex; padding:4px; border-radius:99px; border:1px solid var(--line); background:var(--panel); font:600 14px var(--display); }\n.toggle button { border:0; background:none; padding:8px 16px; border-radius:99px; cursor:pointer; color:var(--muted); }\n.toggle button[aria-pressed=\"true\"] { background:var(--ink); color:var(--bg); }\n.legend { display:flex; gap:18px; font:500 14px var(--display); color:var(--muted); margin-top:14px; }\n.legend i { display:inline-block; width:18px; height:4px; border-radius:2px; margin-right:8px; vertical-align:middle; }\n.chartbox { position:relative; margin-top:10px; }\n.chartbox svg { width:100%; height:auto; display:block; }\n.grid line { stroke:var(--line); stroke-width:1; }\n.axis text { fill:var(--muted); font:500 12px var(--display); }\n.ln { fill:none; stroke-width:2.6; stroke-linejoin:round; stroke-linecap:round; }\n.ln.in { stroke:var(--in); } .ln.out { stroke:var(--out); }\n.thr { stroke:var(--bad); stroke-dasharray:5 5; stroke-width:1.4; opacity:.8; }\n.thrt { fill:var(--bad); font:600 12px var(--display); }\n#xh { position:absolute; top:12px; bottom:26px; width:1px; background:var(--strong); display:none; pointer-events:none; }\n#tip { position:absolute; top:8px; display:none; pointer-events:none; padding:9px 12px; border-radius:10px; background:var(--ink); color:var(--bg); font:500 13px/1.45 var(--display); white-space:nowrap; z-index:2; }\n.empty { padding:26px 0; color:var(--muted); font-style:italic; }\n\n.fc { display:grid; grid-template-columns:repeat(auto-fit,minmax(104px,1fr)); gap:10px; margin-top:20px; }\n.fc div.step { padding:12px 12px 14px; border-radius:14px; background:var(--panel); border:1px solid var(--line); border-top:5px solid var(--strong); font:500 14px/1.35 var(--display); }\n.fc .step[data-s=\"open\"] { border-top-color:var(--good); } .fc .step[data-s=\"closed\"] { border-top-color:var(--bad); } .fc .step[data-s=\"rain\"] { border-top-color:var(--info); }\n.fc .step.best { outline:2px solid var(--good); outline-offset:2px; }\n.fc .tm { font-weight:700; font-size:15px; }\n.fc .tp { font:800 22px/1.2 var(--display); letter-spacing:-.02em; margin-top:2px; }\n.fc .lb { margin-top:4px; color:var(--muted); }\n.fc .lb b { color:var(--tone,var(--muted)); }\n\n.diag { display:grid; grid-template-columns:repeat(auto-fit,minmax(310px,1fr)); margin-top:22px; border-top:1px solid var(--strong); }\n.diag > article { padding:24px 26px 28px 0; border-bottom:1px solid var(--line); }\n.diag > article + article { padding-left:26px; border-left:1px solid var(--line); }\n@media (max-width:760px) { .diag > article, .diag > article + article { padding:22px 0; border-left:0; } }\n.diag h3 { font:700 20px/1.2 var(--display); letter-spacing:-.01em; }\n.diag .what { margin-top:4px; font-size:15px; color:var(--muted); }\n.diag .big { margin-top:16px; font:800 30px/1.1 var(--display); letter-spacing:-.02em; color:var(--tone,var(--ink)); }\n.diag .note { margin-top:8px; font-size:16px; }\n.diag .num { margin-top:10px; font:500 14px/1.5 var(--display); color:var(--muted); font-variant-numeric:tabular-nums; }\n.meter { position:relative; height:12px; margin:30px 0 8px; border-radius:6px; display:flex; overflow:visible; }\n.meter > span { height:100%; }\n.meter > span:first-child { border-radius:6px 0 0 6px; } .meter > span:last-child { border-radius:0 6px 6px 0; }\n.mk { position:absolute; top:-9px; width:4px; height:30px; margin-left:-2px; border-radius:2px; background:var(--ink); transition:left 1s ease; }\n.mk.hollow { background:none; border:2px solid var(--ink); width:10px; margin-left:-5px; height:18px; top:-3px; border-radius:50%; }\n.mlabels { display:flex; justify-content:space-between; font:500 12px var(--display); color:var(--muted); }\n.slider { display:flex; align-items:center; gap:14px; margin-top:18px; font:600 14px var(--display); }\n.slider input { flex:1; accent-color:var(--in); height:28px; }\n.slider output { min-width:3.6em; text-align:right; font-variant-numeric:tabular-nums; }\n\ntable { width:100%; border-collapse:collapse; margin-top:18px; font-variant-numeric:tabular-nums; }\nth,td { padding:13px 10px; text-align:right; border-bottom:1px solid var(--line); }\nth:first-child,td:first-child { text-align:left; color:var(--muted); font-size:16px; padding-left:0; }\nthead th { font:600 14px var(--display); border-bottom:1px solid var(--strong); }\nthead th.in { color:var(--in); } thead th.out { color:var(--out); }\ntd { font:600 18px var(--display); }\ntd.dim { color:var(--muted); font-weight:500; }\n.foot { margin-top:40px; color:var(--muted); font-size:15px; max-width:52em; }\n\n@media (max-width:860px) { .hero { grid-template-columns:1fr; padding:24px; gap:30px; } }\n@media (prefers-reduced-motion: reduce) { .water::before { animation:none; } .water,.mk { transition:none; } }\n\n/* ===== atmosphere ===== */\n@property --sky1{syntax:\"<color>\";inherits:true;initial-value:#e8ebe6}\n@property --sky2{syntax:\"<color>\";inherits:true;initial-value:#cdd5cf}\n@property --ink{syntax:\"<color>\";inherits:true;initial-value:#14282e}\n@property --muted{syntax:\"<color>\";inherits:true;initial-value:#46595e}\n@property --panel{syntax:\"<color>\";inherits:true;initial-value:#fff}\n@property --line{syntax:\"<color>\";inherits:true;initial-value:#ccc}\n@property --strong{syntax:\"<color>\";inherits:true;initial-value:#999}\nhtml{background:var(--sky2);transition:--sky1 1.8s ease,--sky2 1.8s ease,--ink 1.8s ease,--muted 1.8s ease,--panel 1.8s ease,--line 1.8s ease,--strong 1.8s ease}\nbody{background:transparent}.wrap{position:relative}\n\n/* theme palettes: add a new weather state here */\nhtml[data-wx]{--bg:var(--sky2);--ink:#14282e;--muted:#46595e;--panel:rgba(255,255,255,.42);--line:rgba(20,40,46,.14);--strong:rgba(20,40,46,.32);\n  --in:#176f7e;--out:#4655b8;--good:#1d7550;--warn:#99600a;--bad:#b3303f;--info:#236a93;--blob:rgba(255,255,255,.5);--fog:rgba(255,255,255,.55);--cl:rgba(255,255,255,.92);--cls:rgba(135,152,160,.5)}\nhtml[data-wx=clear]{--sky1:#f8f1de;--sky2:#f0e2b8}\nhtml[data-wx=cloud]{--sky1:#cfd9de;--sky2:#aebdc5;--muted:#34484e}\nhtml[data-wx=rain]{--sky1:#d3dede;--sky2:#b3c4c7;--blob:rgba(110,138,148,.38)}\nhtml[data-wx=mist]{--sky1:#c3cccf;--sky2:#a2aeb2;--muted:#2f4247;--fog:rgba(255,255,255,.62)}\nhtml[data-wx=snow]{--sky1:#cbd8e2;--sky2:#a9bccb;--muted:#314448;--blob:rgba(255,255,255,.55)}\nhtml[data-wx=storm],html[data-wx=night],html[data-night=\"1\"]{--ink:#e2eeec;--muted:#9bb3b6;--panel:rgba(18,40,46,.5);--line:rgba(160,190,195,.18);--strong:rgba(160,190,195,.38);\n  --in:#4cc3d3;--out:#97a4f5;--good:#4cc79d;--warn:#e3b04a;--bad:#f2707b;--info:#62b8e6;--blob:rgba(6,10,14,.5);--fog:rgba(150,175,175,.16)}\nhtml[data-wx=storm]{--sky1:#1b252c;--sky2:#2d3b44}\nhtml[data-wx=night],html[data-night=\"1\"]{--sky1:#0c1819;--sky2:#17292b}\n\n/* sky layer */\n#sky{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden;background:linear-gradient(172deg,var(--sky1),var(--sky2))}\n#sky i{position:absolute;display:block}\n.scene{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity 1.8s ease,visibility 0s 1.8s}\n.scene.on{opacity:1;visibility:visible;transition:opacity 1.8s ease}\n.scene:not(.on) *,#sky.idle *{animation-play-state:paused!important}\n.grain{inset:0;opacity:.07;mix-blend-mode:multiply;background-size:220px;\n  background-image:url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")}\nhtml[data-wx=storm] .grain,html[data-wx=night] .grain,html[data-night=\"1\"] .grain{filter:invert(1);mix-blend-mode:screen;opacity:.05}\n\n/* clear */\n.glow{top:-30vmax;right:-30vmax;width:80vmax;height:80vmax;border-radius:50%;background:radial-gradient(closest-side,rgba(255,215,120,.55),transparent);animation:breathe 16s ease-in-out infinite alternate}\n.rays{top:-60vmax;right:-60vmax;width:120vmax;height:120vmax;will-change:transform;animation:spin 240s linear infinite;\n  background:repeating-conic-gradient(rgba(255,226,150,.26) 0 3deg,transparent 3deg 13deg);\n  -webkit-mask-image:radial-gradient(circle,#000,transparent 62%);mask-image:radial-gradient(circle,#000,transparent 62%)}\n.s-night .glow{right:auto;left:-25vmax;background:radial-gradient(closest-side,rgba(110,170,150,.16),transparent)}\n.haze{inset:0;background:radial-gradient(ellipse at 30% 15%,rgba(255,255,255,.4),transparent 60%);animation:breathe 14s ease-in-out infinite alternate}\n.cloud{left:0;width:46vmax;height:24vmax;filter:blur(9px);will-change:transform;animation:drift linear infinite;\n  background:\n    radial-gradient(circle 6vmax at 18% 62%,var(--cl) 96%,transparent),\n    radial-gradient(circle 8.5vmax at 38% 46%,var(--cl) 96%,transparent),\n    radial-gradient(circle 9.5vmax at 60% 44%,var(--cl) 96%,transparent),\n    radial-gradient(circle 6.5vmax at 80% 60%,var(--cl) 96%,transparent),\n    radial-gradient(ellipse 22vmax 4vmax at 50% 78%,var(--cl) 90%,transparent),\n    radial-gradient(ellipse 22vmax 3vmax at 50% 86%,var(--cls) 90%,transparent)}\n/* soft blobs (shared by rain, storm, snow) */\n.blob{width:75vmax;height:45vmax;border-radius:50%;background:radial-gradient(closest-side,var(--blob),transparent);animation:sway 70s ease-in-out infinite alternate}\n.b1{top:-10%;left:-15%}.b2{top:30%;left:35%;animation-duration:95s;animation-direction:alternate-reverse}.b3{top:60%;left:-5%;animation-duration:120s}\n/* rain */\n.drop{top:-12%;width:2px;height:28px;border-radius:2px;background:linear-gradient(transparent,rgba(255,255,255,.9));opacity:.6;animation:fall linear infinite}\n.drop.long{width:1.5px;height:160px;opacity:.4}\n.cond{top:-60px;left:0;right:0;bottom:0;filter:blur(1px);animation:cd 60s ease-in-out infinite alternate;\n  background-image:radial-gradient(circle at 20% 25%,rgba(255,255,255,.22) 0 2px,transparent 3px),radial-gradient(circle at 70% 60%,rgba(255,255,255,.18) 0 3px,transparent 4px),radial-gradient(circle at 45% 85%,rgba(255,255,255,.2) 0 2px,transparent 3px);\n  background-size:210px 190px,260px 230px,170px 200px}\n/* storm: rare, soft ambient lift, never a full flash */\n.flash{inset:0;opacity:0;background:radial-gradient(ellipse at 60% 0,rgba(190,205,225,.3),transparent 60%);animation:flash 47s ease-in-out infinite}\n/* mist */\n.fog{left:-50%;width:200%;height:48%;filter:blur(16px);will-change:transform,opacity;\n  background:radial-gradient(ellipse 22% 55% at 18% 50%,var(--fog),transparent),radial-gradient(ellipse 26% 60% at 50% 42%,var(--fog),transparent),radial-gradient(ellipse 22% 50% at 82% 58%,var(--fog),transparent);\n  animation:slide linear infinite alternate,pulse 11s ease-in-out infinite alternate}\n.f1{top:-4%;--o:.9;animation-duration:60s,9s}\n.f2{top:26%;--o:.8;animation-duration:95s,13s;animation-direction:alternate-reverse,alternate}\n.f3{top:52%;--o:1;animation-duration:140s,11s}\n.gfog{left:0;right:0;bottom:0;height:38%;background:linear-gradient(transparent,var(--fog));opacity:.85}\n.wisp{left:0;top:0;width:60vw;height:11vh;border-radius:50%;background:radial-gradient(closest-side,var(--fog),transparent);filter:blur(12px);will-change:transform;animation:wisp linear infinite}\n/* snow + night motes */\n.flake{top:-6%;width:var(--sz,6px);height:var(--sz,6px);border-radius:50%;background:#fff;box-shadow:0 0 8px rgba(255,255,255,.7);will-change:transform;animation:snow linear infinite}\n.mote{width:2px;height:2px;border-radius:50%;background:rgba(200,230,215,.55);opacity:0;animation:rise linear infinite}\n\n@keyframes spin{to{transform:rotate(360deg)}}\n@keyframes breathe{from{opacity:.55;transform:scale(1)}to{opacity:1;transform:scale(1.08)}}\n@keyframes sway{from{transform:translate3d(-8vw,0,0)}to{transform:translate3d(8vw,2vh,0)}}\n@keyframes slide{to{transform:translate3d(22%,0,0)}}\n@keyframes fall{to{transform:translate3d(-16px,115vh,0)}}\n@keyframes snow{0%{transform:translate3d(0,-5vh,0)}50%{transform:translate3d(calc(var(--dx,40px)*.35),55vh,0)}100%{transform:translate3d(var(--dx,40px),110vh,0)}}\n@keyframes drift{from{transform:translate3d(-55vmax,0,0) scale(var(--s,1))}to{transform:translate3d(100vw,0,0) scale(var(--s,1))}}\n@keyframes pulse{from{opacity:calc(var(--o,1)*.55)}to{opacity:var(--o,1)}}\n@keyframes wisp{from{transform:translate3d(-70vw,0,0)}to{transform:translate3d(110vw,0,0)}}\n@keyframes rise{15%{opacity:.5}to{transform:translate3d(20px,-30vh,0);opacity:0}}\n@keyframes cd{to{transform:translateY(60px)}}\n@keyframes flash{0%,93%,100%{opacity:0}94.5%{opacity:.5}96%{opacity:.12}97.5%{opacity:.3}99%{opacity:0}}\n@media (prefers-reduced-motion:reduce){#sky *{animation:none!important}.drop,.flake,.mote{display:none}html,.scene{transition:none}}\n\n.src{display:inline-block;margin-left:8px;padding:2px 7px;border:1px solid var(--strong);border-radius:3px;font:600 11px/1.4 var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);vertical-align:middle}\n.mathlink{display:inline-block;margin-top:12px;font:600 12px var(--display);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-decoration:underline;text-underline-offset:3px}\n.mathlink:hover{color:var(--ink)}\n.maths{margin-top:20px;border-bottom:1px solid var(--line)}\n.math{border-top:1px solid var(--line)}\n.math summary{cursor:pointer;list-style:none;padding:16px 0;font:700 18px var(--display);display:flex;justify-content:space-between;gap:16px}\n.math summary::-webkit-details-marker{display:none}\n.math summary::after{content:\"+\";font-weight:400;color:var(--muted)}\n.math[open] summary::after{content:\"\\2212\"}\n.math .body{padding:0 0 22px;max-width:50em}\n.math pre{margin:10px 0;padding:12px 14px;border-left:3px solid var(--strong);background:var(--panel);font:500 14px/1.7 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;overflow-x:auto}\n.math p{font-size:16px;color:var(--muted);margin-top:6px}\n.math .live{margin-top:12px;color:var(--ink);font:500 15px/1.6 var(--display);font-variant-numeric:tabular-nums}\n/* editorial pass: fewer boxes, more rules */\n.hero{background:none;border:0;border-top:1px solid var(--strong);border-bottom:1px solid var(--strong);border-radius:0;padding:34px 0}\n.hero h2,.block>h2{font-family:var(--text);font-weight:400;letter-spacing:-.02em}\n.pill,.segcap,.diag .what,.tank span,.mlabels,thead th{text-transform:uppercase;letter-spacing:.08em;font-size:12px}\n.rec{border-radius:0;border:0;border-top:1px solid var(--line);border-left:3px solid var(--tone);background:none}\n.fc .step{border-radius:0;background:none}\n</style>\n</head>\n<body>\n<div id=\"sky\" aria-hidden=\"true\"></div>\n<div class=\"wrap\">\n\n<header class=\"top\">\n  <div class=\"brand\">Moisture Advisory<small id=\"sub\">Your room, measured against the weather outside</small></div>\n  <div class=\"pills\" aria-live=\"polite\">\n    <span class=\"pill\" id=\"pS\" data-on=\"\">\n      <i class=\"dot\"></i><span id=\"tS\">Indoor sensor</span>\n    </span>\n    <span class=\"pill\" id=\"pW\" data-on=\"\">\n      <i class=\"dot\"></i><span id=\"tW\">Outdoor weather</span>\n    </span>\n  </div>\n</header>\n<div id=\"offline\" role=\"alert\">Cannot reach Node-RED. Retrying every 10 seconds.</div>\n\n<main>\n<section class=\"hero\" id=\"hero\" data-tone=\"info\" aria-labelledby=\"headline\">\n  <div>\n    <h2 id=\"headline\" aria-live=\"polite\">Reading the air…</h2>\n    <div class=\"seg\" id=\"seg\" aria-hidden=\"true\"></div>\n    <div class=\"segcap\" id=\"segcap\"></div>\n    <a class=\"mathlink\" href=\"#m-score\">How is this scored?</a>\n    <ul class=\"factors\" id=\"factors\"></ul>\n  </div>\n  <div class=\"air\">\n    <h3>Water held in each cubic metre of air</h3>\n    <div class=\"tanks\">\n      <figure class=\"tank in\">\n        <div class=\"glass\"><div class=\"tick\" style=\"bottom:66.6%\"><span>20</span></div><div class=\"tick\" style=\"bottom:33.3%\"><span>10</span></div><div class=\"water\" id=\"wIn\"></div></div>\n        <figcaption><b id=\"ahIn\">–<small>g</small></b><span>Indoors</span></figcaption>\n      </figure>\n      <figure class=\"tank out\">\n        <div class=\"glass\"><div class=\"tick\" style=\"bottom:66.6%\"><span>20</span></div><div class=\"tick\" style=\"bottom:33.3%\"><span>10</span></div><div class=\"water\" id=\"wOut\"></div></div>\n        <figcaption><b id=\"ahOut\">–<small>g</small></b><span id=\"outLbl\">Outdoors</span></figcaption>\n      </figure>\n    </div>\n    <div class=\"verdict\" id=\"vent\" data-tone=\"info\">\n      <strong id=\"ventAct\">Waiting for both readings</strong>\n      <p id=\"ventWhy\">The verdict appears once the sensor and the weather are both live.</p>\n    </div>\n  </div>\n</section>\n\n<section class=\"block\" aria-labelledby=\"hRecs\">\n  <h2 id=\"hRecs\">What to do now</h2>\n  <p class=\"sub\">Ordered by urgency. It updates every 10 seconds.</p>\n  <ul class=\"recs\" id=\"recs\"></ul>\n</section>\n\n<section class=\"block\" aria-labelledby=\"hDiag\">\n  <h2 id=\"hDiag\">What the room is telling us</h2>\n  <p class=\"sub\">Worked out from the sensor's current reading and OpenWeatherMap API data. Nothing here needs hours of history.</p>\n  <div class=\"diag\">\n    <article id=\"dSource\" data-tone=\"info\">\n      <h3>Moisture balance</h3>\n      <p class=\"what\">Is the room wetter or drier than the air outside? <span class=\"src\">API outdoor</span></p>\n      <div class=\"big\" id=\"srcBig\">Waiting for data</div>\n      <p class=\"note\" id=\"srcWhy\">Needs the sensor and the weather API to both be live.</p>\n      <p class=\"num\" id=\"srcNum\"></p>\n      <a class=\"mathlink\" href=\"#m-balance\">Show the math</a>\n    </article>\n    <article id=\"dBreath\" data-tone=\"info\">\n      <h3>Drying potential</h3>\n      <p class=\"what\">Where humidity would settle if outside air replaced the room air. <span class=\"src\">API outdoor</span></p>\n      <div class=\"big\" id=\"brBig\">Waiting for data</div>\n      <div class=\"meter\" aria-hidden=\"true\">\n        <span style=\"width:40%;background:var(--info);opacity:.6\"></span><span style=\"width:20%;background:var(--good)\"></span><span style=\"width:10%;background:var(--warn)\"></span><span style=\"width:30%;background:var(--bad)\"></span>\n        <i class=\"mk\" id=\"brMk\" style=\"left:0;display:none\"></i><i class=\"mk hollow\" id=\"brTg\" style=\"left:0;display:none\"></i>\n      </div>\n      <div class=\"mlabels\"><span>0%</span><span>50%</span><span>100%</span></div>\n      <p class=\"note\" id=\"brWhy\"></p>\n      <p class=\"num\" id=\"brNum\"></p>\n      <a class=\"mathlink\" href=\"#m-dry\">Show the math</a>\n    </article>\n    <article id=\"dWood\" data-tone=\"info\">\n      <h3>Wood and instruments</h3>\n      <p class=\"what\">Where guitars, doors and furniture are heading at today's humidity.</p>\n      <div class=\"big\" id=\"wdBig\">Waiting for data</div>\n      <div class=\"meter\" aria-hidden=\"true\">\n        <span style=\"width:25%;background:var(--bad);opacity:.55\"></span><span style=\"width:25%;background:var(--good)\"></span><span style=\"width:17%;background:var(--warn)\"></span><span style=\"width:33%;background:var(--bad)\"></span>\n        <i class=\"mk\" id=\"wdMk\" style=\"left:0;display:none\"></i>\n      </div>\n      <div class=\"mlabels\"><span>4%</span><span>8%</span><span>12%</span><span>18%</span></div>\n      <p class=\"note\" id=\"wdWhy\"></p>\n      <p class=\"num\" id=\"wdNum\"></p>\n      <a class=\"mathlink\" href=\"#m-wood\">Show the math</a>\n    </article>\n    <article id=\"dCond\" data-tone=\"info\">\n      <h3>Condensation margin</h3>\n      <p class=\"what\">How far your coldest surface is above the dew point.</p>\n      <div class=\"big\" id=\"cdBig\">–</div>\n      <div class=\"slider\">\n        <label for=\"surf\">Coldest surface</label>\n        <input id=\"surf\" type=\"range\" min=\"15\" max=\"30\" step=\"0.5\" value=\"23\">\n        <output id=\"surfOut\" for=\"surf\">23.0 °C</output>\n      </div>\n      <p class=\"note\" id=\"cdWhy\">Set this to the temperature of the walls or windows near your AC. Water forms on anything colder than the dew point.</p>\n      <a class=\"mathlink\" href=\"#m-cond\">Show the math</a>\n    </article>\n  </div>\n</section>\n\n<section class=\"block\" aria-labelledby=\"hMath\">\n  <h2 id=\"hMath\">How these are calculated</h2>\n  <p class=\"sub\">Open any line to see the formula, the assumptions, and your own numbers worked through it.</p>\n  <div class=\"maths\">\n    <details class=\"math\" id=\"m-ah\"><summary>Water in the air (absolute humidity)</summary><div class=\"body\">\n      <p>Relative humidity only says how full the air is for its temperature. Absolute humidity is the actual mass of water in each cubic metre, so indoor and outdoor air can be compared fairly.</p>\n<pre>e  = (RH / 100) &times; 6.112 &times; exp(17.67 &times; T / (T + 243.5))      vapour pressure, hPa\nAH = 216.7 &times; e / (273.15 + T)                                 grams of water per m&sup3;</pre>\n      <p>T is in &deg;C and RH in %. Indoor values come from the sensor, outdoor values from the OpenWeatherMap API.</p>\n      <p class=\"live\" id=\"lv-ah\"></p></div></details>\n    <details class=\"math\" id=\"m-dew\"><summary>Dew point</summary><div class=\"body\">\n      <p>The temperature at which the air would be completely full and start to drop water. It uses the Magnus formula.</p>\n<pre>&gamma;  = ln(RH / 100) + 17.62 &times; T / (243.12 + T)\nTd = 243.12 &times; &gamma; / (17.62 &minus; &gamma;)</pre>\n      <p class=\"live\" id=\"lv-dew\"></p></div></details>\n    <details class=\"math\" id=\"m-balance\"><summary>Moisture balance</summary><div class=\"body\">\n      <p>Compares the water held by room air with the water held by outdoor air.</p>\n<pre>gap = AH_indoor &minus; AH_outdoor\n\ngap &ge; +2 g/m&sup3;   Wetter than outside\ngap &le; &minus;2 g/m&sup3;   Drier than outside\notherwise        Balanced</pre>\n      <p>The 2 g/m&sup3; band stops small differences from flipping the answer. The outlook line uses the next step of the API forecast: AH_forecast &minus; AH_outdoor_now.</p>\n      <p class=\"live\" id=\"lv-bal\"></p></div></details>\n    <details class=\"math\" id=\"m-dry\"><summary>Drying potential</summary><div class=\"body\">\n      <p>Imagines all the room air being swapped for outdoor air, which then settles at room temperature. It shows the humidity you would end up with.</p>\n<pre>e_out    = AH_outdoor &times; (273.15 + T_room) / 216.7\ne_sat    = 6.112 &times; exp(17.67 &times; T_room / (T_room + 243.5))\nRH_final = 100 &times; e_out / e_sat          (kept between 0 and 100 %)</pre>\n      <p>It assumes no new moisture is added indoors while the air is swapped, and that the city-wide outdoor reading matches the air outside your window.</p>\n      <p class=\"live\" id=\"lv-dry\"></p></div></details>\n    <details class=\"math\" id=\"m-wood\"><summary>Wood and instruments</summary><div class=\"body\">\n      <p>Wood slowly takes on or gives up water until it matches the air. The Hailwood&ndash;Horrobin equation gives the moisture content wood settles at, for the current temperature and humidity.</p>\n<pre>T = 1.8 &times; T_c + 32 (&deg;F),   h = RH / 100\nW  = 330 + 0.452 T + 0.00415 T&sup2;\nK  = 0.791 + 4.63e-4 T &minus; 8.44e-7 T&sup2;\nK1 = 6.34 + 7.75e-4 T &minus; 9.35e-5 T&sup2;\nK2 = 1.09 + 2.84e-2 T &minus; 9.04e-5 T&sup2;\nq  = K1 &times; K2 &times; (K h)&sup2;\nEMC = 1800 / W &times; [ K h / (1 &minus; K h) + (K1 K h + 2 q) / (1 + K1 K h + q) ]\n\nabove 13 %   Danger        above 11 %   Too humid\nabove 9.5 %  Slightly humid   below 6 %   Too dry</pre>\n      <p>This is where the wood is heading, not where it is now. Thin pieces take days to get there and thick furniture takes weeks.</p>\n      <p class=\"live\" id=\"lv-wood\"></p></div></details>\n    <details class=\"math\" id=\"m-cond\"><summary>Condensation margin</summary><div class=\"body\">\n      <p>Water forms on any surface colder than the dew point of the room air.</p>\n<pre>margin = T_surface &minus; Td_indoor\n\nmargin &le; 0 &deg;C   condensing now\nmargin &lt; 2 &deg;C    close to condensing\nmargin &lt; 4 &deg;C    worth watching</pre>\n      <p>T_surface is the value you set on the slider. The sensor cannot measure wall or window temperature, so this is your estimate.</p>\n      <p class=\"live\" id=\"lv-cond\"></p></div></details>\n    <details class=\"math\" id=\"m-score\"><summary>Mold risk score</summary><div class=\"body\">\n      <p>Adds up points from the current reading only. Nothing is averaged over time.</p>\n<pre>Humidity  &ge; 80 %  +3      &ge; 70 %  +2      &ge; 60 %  +1\nDew point &ge; 22 &deg;C  +1\nMargin    &le; 0 &deg;C  +2      &lt; 2 &deg;C   +1\n\nScore 0&ndash;6:  &ge; 2 Worth watching,  &ge; 3 Rising,  &ge; 5 Mold conditions present</pre>\n      <p>To stop the headline flickering, a level is kept until the score falls one point below its threshold.</p>\n      <p class=\"live\" id=\"lv-score\"></p></div></details>\n    <details class=\"math\" id=\"m-vent\"><summary>Window advice</summary><div class=\"body\">\n      <p>Opening a window helps only if the outdoor air holds clearly less water than the room.</p>\n<pre>gain = AH_indoor &minus; AH_outdoor\n\nraining outside        Keep windows closed\ngain &ge; +2 g/m&sup3;        Open the windows\ngain &le; &minus;2 g/m&sup3;        Keep windows closed\notherwise              Little difference</pre>\n      <p>The \"best time to open\" advice repeats this for each step of the API forecast and picks the step with the largest gain.</p>\n      <p class=\"live\" id=\"lv-vent\"></p></div></details>\n  </div>\n</section>\n\n<section class=\"block\" aria-labelledby=\"hNum\">\n  <h2 id=\"hNum\">The numbers</h2>\n  <table>\n    <thead><tr><th scope=\"col\"><span class=\"sr\" style=\"position:absolute;left:-9999px\">Measure</span></th><th class=\"in\" scope=\"col\">Indoors</th><th class=\"out\" scope=\"col\">Outdoors<span class=\"src\">API</span></th><th scope=\"col\">Difference</th></tr></thead>\n    <tbody id=\"rows\"></tbody>\n  </table>\n</section>\n</main>\n\n<p class=\"foot\">Indoor values are the sensor's latest reading. Outdoor values and the forecast-based advice come from the OpenWeatherMap API for the whole city, so treat the comparison as indoors against the neighbourhood, not against the air outside your window. Advice is indicative and does not confirm mold growth.</p>\n</div>\n\n<script>\n(function () {\n  var THEMES = [\"clear\",\"cloud\",\"rain\",\"storm\",\"mist\",\"snow\",\"night\"];\n  function themeFor(w) {                      // OpenWeatherMap condition id -> theme\n    if (!w) return null;\n    var id = w.id | 0, k;\n    if (id >= 200 && id < 300) k = \"storm\";\n    else if (id >= 300 && id < 600) k = \"rain\";\n    else if (id >= 600 && id < 700) k = \"snow\";\n    else if (id >= 700 && id < 800) k = \"mist\";\n    else if (id === 800 || id === 801) k = \"clear\";\n    else k = \"cloud\";\n    if (w.night && (k === \"clear\" || k === \"cloud\")) k = \"night\";\n    return { key: k, night: !!w.night };\n  }\n  var BL = '<i class=\"blob b1\"></i><i class=\"blob b2\"></i><i class=\"blob b3\"></i>';\n  var SC = { clear:'<i class=\"glow\"></i><i class=\"rays\"></i>', cloud:'<i class=\"haze\"></i>', rain:BL+'<i class=\"cond\"></i>', storm:BL+'<i class=\"flash\"></i>',\n             mist:'<i class=\"fog f1\"></i><i class=\"fog f2\"></i><i class=\"fog f3\"></i><i class=\"gfog\"></i>', snow:BL, night:'<i class=\"glow\"></i>' };\n  var sky = document.getElementById(\"sky\");\n  THEMES.forEach(function (k) { var s = document.createElement(\"div\"); s.className = \"scene s-\" + k; s.innerHTML = SC[k]; sky.appendChild(s); });\n  var g = document.createElement(\"i\"); g.className = \"grain\"; sky.appendChild(g);\n\n  var K = matchMedia(\"(max-width:700px)\").matches ? 0.5 : 1;\n  function R(a, b) { return a + Math.random() * (b - a); }\n  function seed(sc, cls, n, fn) {\n    var s = sky.querySelector(\".s-\" + sc);\n    for (var i = 0; i < Math.round(n * K); i++) { var e = document.createElement(\"i\"); e.className = cls; fn(e); s.appendChild(e); }\n  }\n  function lane(e, a, b) { e.style.left = R(0, 100) + \"%\"; e.style.animationDuration = R(a, b) + \"s\"; e.style.animationDelay = -R(0, b) + \"s\"; }\n  seed(\"rain\", \"drop\", 40, function (e) { lane(e, 4, 8); });\n  seed(\"rain\", \"drop long\", 7, function (e) { lane(e, 7, 12); });\n  seed(\"snow\", \"flake\", 44, function (e) {              // big and small flakes, bigger ones fall faster and a little blurred\n    var z = R(3, 13), d = R(12, 24) - z * 0.6;\n    e.style.setProperty(\"--sz\", z.toFixed(1) + \"px\"); e.style.setProperty(\"--dx\", R(-90, 90).toFixed(0) + \"px\");\n    e.style.left = R(0, 100) + \"%\"; e.style.animationDuration = d + \"s\"; e.style.animationDelay = -R(0, d) + \"s\";\n    e.style.opacity = R(0.55, 1); if (z > 9) e.style.filter = \"blur(1.5px)\";\n  });\n  seed(\"cloud\", \"cloud\", 6, function (e) {              // real cloud shapes drifting across the sky\n    var d = R(70, 140);\n    e.style.top = R(-4, 62) + \"%\"; e.style.setProperty(\"--s\", R(0.6, 1.5).toFixed(2));\n    e.style.animationDuration = d + \"s\"; e.style.animationDelay = -R(0, d) + \"s\"; e.style.opacity = R(0.6, 0.95);\n  });\n  seed(\"mist\", \"wisp\", 7, function (e) {                // fast thin wisps in front of the slow fog banks\n    var d = R(35, 80);\n    e.style.top = R(5, 85) + \"%\"; e.style.width = R(40, 80) + \"vw\"; e.style.height = R(7, 16) + \"vh\";\n    e.style.animationDuration = d + \"s\"; e.style.animationDelay = -R(0, d) + \"s\"; e.style.opacity = R(0.5, 0.9);\n  });\n  seed(\"night\", \"mote\", 18, function (e) { lane(e, 20, 40); e.style.top = R(40, 100) + \"%\"; });\n\n  var cur = \"\";\n  function set(t) {\n    var sig = t.key + (t.night ? \"n\" : \"d\"); if (sig === cur) return;   // no restart on API refresh\n    cur = sig;\n    var r = document.documentElement; r.dataset.wx = t.key; r.dataset.night = t.night ? \"1\" : \"0\";\n    sky.querySelectorAll(\".scene\").forEach(function (s) { s.classList.toggle(\"on\", s.classList.contains(\"s-\" + t.key)); });\n  }\n  // Preview any sky by adding ?wx=NAME to the URL: clear, cloud, rain, storm, mist, snow, night\n  // Add -night for the dark variant, e.g. /board?wx=rain-night\n  var PREVIEW = { clear: 800, cloud: 804, rain: 500, storm: 200, mist: 741, snow: 600, night: 800 };\n  function previewWeather() {\n    var m = /[?&]wx=([a-z]+)(-night)?/.exec(location.search);\n    if (!m || !(m[1] in PREVIEW)) return null;\n    return { id: PREVIEW[m[1]], night: m[1] === \"night\" || !!m[2] };\n  }\n  window.applySky = function (w) {\n    var t = themeFor(previewWeather() || w);   // preview wins over live weather\n    if (t) set(t);                              // null weather keeps last valid theme\n  };\n  set({ key: \"cloud\", night: false });          // neutral default\n  window.applySky(null);                        // so a preview also works before data loads\n  document.addEventListener(\"visibilitychange\", function () { sky.classList.toggle(\"idle\", document.hidden); });\n})();\n</script>\n\n<script>\n(function () {\n  \"use strict\";\n  var $ = function (id) { return document.getElementById(id); };\n  function el(tag, cls, text) { var e = document.createElement(tag); if (cls) e.className = cls; if (text !== undefined && text !== null) e.textContent = text; return e; }\n  function f(v, d) { return (typeof v === \"number\" && isFinite(v)) ? v.toFixed(d === undefined ? 1 : d) : \"–\"; }\n  function sgn(v, d) { return (typeof v === \"number\" && isFinite(v)) ? (v > 0 ? \"+\" : v < 0 ? \"−\" : \"\") + Math.abs(v).toFixed(d === undefined ? 1 : d) : \"–\"; }\n  function tfmt(ts) { return new Date(ts).toLocaleTimeString([], { hour: \"numeric\", minute: \"2-digit\" }); }\n  function hfmt(ts) { return new Date(ts).toLocaleTimeString([], { hour: \"numeric\" }); }\n  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }\n  function age(sec) { return sec === null ? \"never\" : sec < 90 ? sec + \"s ago\" : Math.round(sec / 60) + \" min ago\"; }\n\n  var surface = 23;\n  try { var sv = parseFloat(localStorage.getItem(\"ma-surface\")); if (isFinite(sv)) surface = sv; } catch (e) {}\n  var data = null;\n  $(\"surf\").value = surface; $(\"surfOut\").textContent = surface.toFixed(1) + \" °C\";\n\n  /* ---------- hero ---------- */\n  function renderHero() {\n    var r = data.risk, D = data.derived;\n    $(\"hero\").dataset.tone = r.tone;\n    $(\"headline\").textContent = r.headline;\n    var seg = $(\"seg\"); seg.textContent = \"\";\n    for (var i = 0; i < r.max; i++) seg.appendChild(el(\"i\", i < r.score ? \"on\" : \"\"));\n    $(\"segcap\").textContent = data.live.s ? \"Risk score \" + r.score + \" of \" + r.max : \"\";\n    var fl = $(\"factors\"); fl.textContent = \"\";\n    r.factors.forEach(function (x) { var li = el(\"li\", \"\", x.text); li.dataset.tone = x.tone; fl.appendChild(li); });\n\n    function lvl(v) { return clamp(v / 30 * 100, 0, 100) + \"%\"; }\n    $(\"wIn\").style.height = D.iah !== undefined ? lvl(D.iah) : \"0%\";\n    $(\"wOut\").style.height = D.oah !== undefined ? lvl(D.oah) : \"0%\";\n    function setNum(id, v) { var b = $(id); b.textContent = \"\"; b.appendChild(document.createTextNode(f(v))); b.appendChild(el(\"small\", \"\", \"g/m³\")); }\n    setNum(\"ahIn\", D.iah); setNum(\"ahOut\", D.oah);\n    $(\"outLbl\").textContent = data.weather ? \"Outdoors, \" + data.weather.city + \" (API)\" : \"Outdoors (API)\";\n\n    var v = data.vent, box = $(\"vent\");\n    if (v) { box.dataset.tone = v.tone; $(\"ventAct\").textContent = v.act; $(\"ventWhy\").textContent = v.why; }\n    else { box.dataset.tone = \"info\"; $(\"ventAct\").textContent = \"Waiting for both readings\"; $(\"ventWhy\").textContent = \"The verdict appears once the sensor and the weather are both live.\"; }\n  }\n\n  function renderHeader() {\n    var L = data.live;\n    $(\"pS\").dataset.on = L.s ? \"1\" : \"0\";\n    $(\"tS\").textContent = L.s ? \"Indoor sensor live\" : \"Indoor sensor offline (\" + age(L.sAge) + \")\";\n    $(\"pW\").dataset.on = L.w ? \"1\" : \"0\";\n    $(\"tW\").textContent = L.w ? \"Outdoor (API): \" + data.weather.desc + \", \" + f(data.weather.t, 0) + \"°C\" : \"Outdoor weather offline\";\n    if (data.weather) $(\"sub\").textContent = \"Your room, measured against the weather in \" + data.weather.city;\n  }\n\n  /* ---------- recommendations ---------- */\n  function renderRecs() {\n    var ul = $(\"recs\"); ul.textContent = \"\";\n    var glyph = { good: \"✓\", warn: \"!\", bad: \"×\", info: \"i\" };\n    data.recs.forEach(function (r) {\n      var li = el(\"li\", \"rec\"); li.dataset.tone = r.tone;\n      li.appendChild(el(\"div\", \"ic\", glyph[r.tone] || \"i\"));\n      var d = el(\"div\");\n      d.appendChild(el(\"h3\", \"\", r.title));\n      d.appendChild(el(\"p\", \"\", r.detail.replace(\"{t}\", r.ts ? tfmt(r.ts) : \"\")));\n      li.appendChild(d); ul.appendChild(li);\n    });\n  }\n\n  /* ---------- diagnostics ---------- */\n  function renderDiag() {\n    var I = data.insight || {}, D = data.derived;\n    // moisture balance (current reading vs API outdoor)\n    var tm = { \"Wetter than outside\": \"warn\", \"Drier than outside\": \"info\", \"Balanced\": \"good\" };\n    if (I.source) {\n      $(\"dSource\").dataset.tone = tm[I.source] || \"info\";\n      $(\"srcBig\").textContent = I.source; $(\"srcWhy\").textContent = I.sourceWhy;\n      var o = I.outlook, ot = typeof o !== \"number\" ? \"\" : Math.abs(o) < 0.5 ? \" The API forecast expects outdoor air to stay about the same over the next 3 hours.\" : \" The API forecast expects outdoor air to get \" + (o > 0 ? \"wetter\" : \"drier\") + \" by \" + f(Math.abs(o)) + \" g/m³ over the next 3 hours.\";\n      $(\"srcNum\").textContent = \"Room minus outdoor: \" + sgn(I.gap) + \" g/m³.\" + ot;\n    } else {\n      $(\"dSource\").dataset.tone = \"info\";\n      $(\"srcBig\").textContent = \"Waiting for data\"; $(\"srcWhy\").textContent = \"Needs the sensor and the weather API to both be live.\"; $(\"srcNum\").textContent = \"\";\n    }\n    // drying potential\n    if (I.dry) {\n      var sw = I.dry.swap, nw = I.dry.now;\n      $(\"dBreath\").dataset.tone = sw < 60 ? \"good\" : sw < 70 ? \"info\" : \"warn\";\n      $(\"brBig\").textContent = \"Settles near \" + f(sw, 0) + \"%\";\n      $(\"brMk\").style.display = \"block\"; $(\"brMk\").style.left = clamp(nw, 0, 100) + \"%\";\n      $(\"brTg\").style.display = \"block\"; $(\"brTg\").style.left = clamp(sw, 0, 100) + \"%\";\n      $(\"brWhy\").textContent = sw < nw - 3 ? \"Fresh outdoor air would lower humidity from \" + f(nw, 0) + \"% (solid mark) to about \" + f(sw, 0) + \"% (ring).\"\n                              : sw > nw + 3 ? \"Outdoor air would raise humidity from \" + f(nw, 0) + \"% to about \" + f(sw, 0) + \"%, so ventilating would not help.\"\n                              : \"Outdoor air would leave humidity close to the current \" + f(nw, 0) + \"%.\";\n      $(\"brNum\").textContent = \"Uses the API outdoor water content, brought to the room's temperature.\";\n    } else {\n      $(\"dBreath\").dataset.tone = \"info\";\n      $(\"brMk\").style.display = \"none\"; $(\"brTg\").style.display = \"none\";\n      $(\"brBig\").textContent = \"Waiting for data\"; $(\"brWhy\").textContent = \"Needs the sensor and the weather API to both be live.\"; $(\"brNum\").textContent = \"\";\n    }\n    // wood (equilibrium at the current reading)\n    if (I.wood) {\n      var m = I.wood.target, v = I.woodVerdict || \"\", t = v.indexOf(\"Danger\") === 0 ? \"bad\" : v.indexOf(\"Safe\") === 0 ? \"good\" : v.indexOf(\"Slightly\") === 0 ? \"info\" : \"warn\";\n      $(\"dWood\").dataset.tone = t;\n      $(\"wdBig\").textContent = v.split(\":\")[0];\n      $(\"wdWhy\").textContent = v.indexOf(\":\") > 0 ? v.split(\":\").slice(1).join(\":\").trim().replace(/^./, function (c) { return c.toUpperCase(); }) + \".\" : \"Wood is holding a healthy amount of water.\";\n      $(\"wdMk\").style.display = \"block\"; $(\"wdMk\").style.left = clamp((m - 4) / 14 * 100, 0, 100) + \"%\";\n      $(\"wdNum\").textContent = \"At the current humidity, wood settles near \" + f(m) + \"% water. Real wood takes days to get there, so this shows where it is heading.\";\n    }\n    // condensation\n    if (D.margin !== undefined) {\n      var mg = D.margin, ct = mg <= 0 ? \"bad\" : mg < 2 ? \"warn\" : mg < 4 ? \"info\" : \"good\";\n      $(\"dCond\").dataset.tone = ct;\n      $(\"cdBig\").textContent = mg <= 0 ? \"Condensing now\" : f(mg) + \"°C of margin\";\n      $(\"cdWhy\").textContent = \"The dew point is \" + f(D.idp) + \"°C. \" + (mg <= 0 ? \"Surfaces at \" + f(data.surface) + \"°C are colder than that, so water is forming on them.\" : mg < 2 ? \"Surfaces at \" + f(data.surface) + \"°C are close to that. A small drop would start condensation.\" : \"Surfaces at \" + f(data.surface) + \"°C stay above it, so they should stay dry.\");\n    }\n  }\n\n  /* ---------- numbers table ---------- */\n  function renderTable() {\n    var S = data.sensor, W = data.weather, D = data.derived, tb = $(\"rows\"); tb.textContent = \"\";\n    function row(name, a, b, c) {\n      var tr = el(\"tr\"); tr.appendChild(el(\"td\", \"\", name));\n      [a, b].forEach(function (x) { tr.appendChild(el(\"td\", \"\", x)); });\n      tr.appendChild(el(\"td\", \"dim\", c)); tb.appendChild(tr);\n    }\n    row(\"Temperature\", S ? f(S.t) + \" °C\" : \"–\", W ? f(W.t) + \" °C\" : \"–\", D.tempDiff !== undefined ? sgn(D.tempDiff) + \" °C\" : \"–\");\n    row(\"Relative humidity\", S ? f(S.h, 0) + \" %\" : \"–\", W ? f(W.h, 0) + \" %\" : \"–\", D.rhDiff !== undefined ? sgn(D.rhDiff, 0) + \" %\" : \"–\");\n    row(\"Dew point\", D.idp !== undefined ? f(D.idp) + \" °C\" : \"–\", D.odp !== undefined ? f(D.odp) + \" °C\" : \"–\", D.dewDiff !== undefined ? sgn(D.dewDiff) + \" °C\" : \"–\");\n    row(\"Water in the air\", D.iah !== undefined ? f(D.iah) + \" g/m³\" : \"–\", D.oah !== undefined ? f(D.oah) + \" g/m³\" : \"–\", D.ahGain !== undefined ? sgn(D.ahGain) + \" g/m³\" : \"–\");\n    row(\"Pressure\", S && S.p != null ? f(S.p) + \" hPa\" : \"–\", W ? f(W.p) + \" hPa\" : \"–\", \"not comparable\");\n  }\n\n  /* ---------- the math, with live numbers ---------- */\n  function mathLive() {\n    var S = data.sensor, W = data.weather, D = data.derived, I = data.insight || {}, R = data.risk;\n    var none = \"Live numbers appear once the sensor and the weather are both live.\";\n    function setL(id, txt) { $(id).textContent = txt || none; }\n    function eOf(t, h) { return h / 100 * 6.112 * Math.exp(17.67 * t / (t + 243.5)); }\n    var a = [], d = [];\n    if (S) { a.push(\"Indoors: \" + f(S.t) + \" °C, \" + f(S.h, 0) + \" % gives e = \" + f(eOf(S.t, S.h), 2) + \" hPa, so \" + f(D.iah, 2) + \" g/m³.\"); d.push(\"Indoors: \" + f(D.idp) + \" °C.\"); }\n    if (W) { a.push(\"Outdoors (API): \" + f(W.t) + \" °C, \" + f(W.h, 0) + \" % gives e = \" + f(eOf(W.t, W.h), 2) + \" hPa, so \" + f(D.oah, 2) + \" g/m³.\"); d.push(\"Outdoors (API): \" + f(D.odp) + \" °C.\"); }\n    setL(\"lv-ah\", a.join(\"  \")); setL(\"lv-dew\", d.join(\"  \"));\n    setL(\"lv-bal\", typeof I.gap === \"number\" ? \"Room \" + f(D.iah, 2) + \" − outdoor \" + f(D.oah, 2) + \" = \" + sgn(I.gap, 2) + \" g/m³, so \" + I.source.toLowerCase() + \".\" : \"\");\n    setL(\"lv-dry\", I.dry ? \"Outdoor water \" + f(D.oah, 2) + \" g/m³ at \" + f(S.t) + \" °C gives e_out = \" + f(D.oah * (273.15 + S.t) / 216.7, 2) + \" hPa. Saturation at that temperature is \" + f(6.112 * Math.exp(17.67 * S.t / (S.t + 243.5)), 2) + \" hPa. So RH_final = \" + f(I.dry.swap, 1) + \" %.\" : \"\");\n    setL(\"lv-wood\", I.wood ? \"At \" + f(S.t) + \" °C and \" + f(S.h, 0) + \" %, EMC = \" + f(I.wood.target, 1) + \" %, which reads as \" + (I.woodVerdict || \"\").split(\":\")[0].toLowerCase() + \".\" : \"\");\n    setL(\"lv-cond\", D.margin !== undefined ? \"Surface \" + f(data.surface) + \" °C − dew point \" + f(D.idp) + \" °C = \" + sgn(D.margin) + \" °C.\" : \"\");\n    setL(\"lv-score\", R && R.level >= 0 ? \"Score \" + R.score + \" of \" + R.max + \": \" + R.factors.map(function (x) { return x.text; }).join(\" \") : \"\");\n    setL(\"lv-vent\", data.vent ? data.vent.act + \". \" + data.vent.why : \"\");\n  }\n  Array.prototype.forEach.call(document.querySelectorAll(\".mathlink\"), function (a) {\n    a.addEventListener(\"click\", function (ev) {\n      ev.preventDefault();\n      var d = $(a.getAttribute(\"href\").slice(1)); if (!d) return;\n      d.open = true;\n      d.scrollIntoView({ behavior: matchMedia(\"(prefers-reduced-motion: reduce)\").matches ? \"auto\" : \"smooth\", block: \"start\" });\n    });\n  });\n\n  /* ---------- loop ---------- */\n  function render() { applySky(data.weather); renderHeader(); renderHero(); renderRecs(); renderDiag(); mathLive(); renderTable(); }\n  function load() {\n    fetch(location.pathname.replace(/\\/$/, \"\") + \"/data?surface=\" + encodeURIComponent(surface), { cache: \"no-store\" })\n      .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })\n      .then(function (j) { data = j; $(\"offline\").style.display = \"none\"; render(); })\n      .catch(function () { $(\"offline\").style.display = \"block\"; });\n  }\n  $(\"surf\").addEventListener(\"input\", function () {\n    surface = parseFloat(this.value); $(\"surfOut\").textContent = surface.toFixed(1) + \" °C\";\n    try { localStorage.setItem(\"ma-surface\", String(surface)); } catch (e) {}\n  });\n  $(\"surf\").addEventListener(\"change\", load);\n  load(); setInterval(load, 10000);\n})();\n</script>\n</body>\n</html>\n",
+        "output": "str",
+        "x": 340,
+        "y": 610,
+        "wires": [
+            [
+                "7e07cc292c448d84"
+            ]
+        ]
+    },
+    {
+        "id": "7e07cc292c448d84",
+        "type": "http response",
+        "z": "d287c8679ecf4a01",
+        "name": "",
+        "statusCode": "",
+        "headers": {
+            "Content-Type": "text/html; charset=utf-8",
+            "Cache-Control": "no-store"
+        },
+        "x": 560,
+        "y": 610,
+        "wires": []
+    },
+    {
+        "id": "86b21885667d797c",
+        "type": "http in",
+        "z": "d287c8679ecf4a01",
+        "name": "",
+        "url": "/board/data",
+        "method": "get",
+        "upload": false,
+        "skipBodyParsing": false,
+        "swaggerDoc": "",
+        "x": 130,
+        "y": 680,
+        "wires": [
+            [
+                "4006680da621d64c"
+            ]
+        ]
+    },
+    {
+        "id": "4006680da621d64c",
+        "type": "function",
+        "z": "d287c8679ecf4a01",
+        "name": "build dashboard data",
+        "func": "// Builds the JSON that the dashboard page polls (GET /board/data)\n// Indoor numbers = latest sensor reading only. Outdoor numbers, outlook and pressure trend = OpenWeatherMap API.\nfunction ah(t, h) {\n    const e = h / 100 * 6.112 * Math.exp(17.67 * t / (t + 243.5));\n    return 216.7 * e / (273.15 + t);\n}\nfunction rhFromAh(t, a) {\n    const e = a * (273.15 + t) / 216.7;\n    const es = 6.112 * Math.exp(17.67 * t / (t + 243.5));\n    return Math.max(0, Math.min(100, e / es * 100));\n}\nfunction dp(t, h) {\n    if (!Number.isFinite(t) || !Number.isFinite(h) || h <= 0 || h > 100) return null;\n    const a = 17.62, b = 243.12;\n    const g = Math.log(h / 100) + a * t / (b + t);\n    return b * g / (a - g);\n}\nfunction emc(tC, rh) {   // Hailwood-Horrobin equilibrium moisture content of wood, %\n    const T = tC * 9 / 5 + 32, h = rh / 100;\n    const W  = 330 + 0.452 * T + 0.00415 * T * T;\n    const K  = 0.791 + 4.63e-4 * T - 8.44e-7 * T * T;\n    const K1 = 6.34 + 7.75e-4 * T - 9.35e-5 * T * T;\n    const K2 = 1.09 + 2.84e-2 * T - 9.04e-5 * T * T;\n    const Kh = K * h, q = K1 * K2 * Kh * Kh;\n    return 1800 / W * (Kh / (1 - Kh) + (K1 * Kh + 2 * q) / (1 + K1 * Kh + q));\n}\nconst f1 = v => v.toFixed(1);\n\nconst now = Date.now();\nconst s = flow.get(\"sensor\"), w = flow.get(\"weather\"), fc = flow.get(\"forecast\");\nconst sLive = !!(s && now - s.ts < 180000);\nconst wLive = !!(w && now - w.ts < 30 * 60000);\n\nconst q = msg.req && msg.req.query ? msg.req.query.surface : undefined;\nlet surface = (q === undefined || q === \"\") ? 23 : Number(q);\nif (!Number.isFinite(surface)) surface = 23;\nsurface = Math.max(10, Math.min(35, surface));\n\n// ---------- derived values ----------\nconst D = {};\nif (sLive) { D.idp = dp(s.t, s.h); D.iah = ah(s.t, s.h); D.margin = surface - D.idp; }\nif (wLive) { D.odp = dp(w.t, w.h); D.oah = ah(w.t, w.h); }\nif (sLive && wLive) { D.ahGain = D.iah - D.oah; D.tempDiff = s.t - w.t; D.rhDiff = s.h - w.h; D.dewDiff = D.idp - D.odp; }\n\n// ---------- mold risk score (current reading only, max 6) ----------\nlet score = 0;\nconst factors = [];\nlet level = -1, headline = \"Waiting for the indoor sensor\", tone = \"info\";\nif (sLive) {\n    const hum = Math.round(s.h);\n    if (s.h >= 80)      { score += 3; factors.push({ tone: \"bad\",  text: \"Humidity is \" + hum + \"%, well above the 70% mold line.\" }); }\n    else if (s.h >= 70) { score += 2; factors.push({ tone: \"warn\", text: \"Humidity is \" + hum + \"%, above the 70% mold line.\" }); }\n    else if (s.h >= 60) { score += 1; factors.push({ tone: \"info\", text: \"Humidity is \" + hum + \"%, a little high.\" }); }\n\n    if (D.idp >= 22) { score += 1; factors.push({ tone: \"info\", text: \"Dew point is \" + f1(D.idp) + \"°C, so the air is very muggy.\" }); }\n\n    if (D.margin <= 0)      { score += 2; factors.push({ tone: \"bad\",  text: \"Surfaces at \" + f1(surface) + \"°C are below the dew point, so water is condensing.\" }); }\n    else if (D.margin < 2)  { score += 1; factors.push({ tone: \"warn\", text: \"Surfaces at \" + f1(surface) + \"°C are within 2°C of condensing.\" }); }\n\n    const th = [2, 3, 5];\n    const prev = flow.get(\"lvl\") || 0;\n    let lvl = 0;\n    for (let i = 0; i < 3; i++) if (score >= th[i] - (prev > i ? 1 : 0)) lvl = i + 1;   // hysteresis\n    flow.set(\"lvl\", lvl);\n    level = lvl;\n    headline = [\"Mold risk is low\", \"Worth watching\", \"Mold risk is rising\", \"Mold conditions are present\"][lvl];\n    tone = [\"good\", \"info\", \"warn\", \"bad\"][lvl];\n    if (!factors.length) factors.push({ tone: \"good\", text: \"Humidity is \" + hum + \"%, in a comfortable range.\" });\n}\n\n// ---------- ventilation verdict ----------\nlet vent = null;\nif (sLive && wLive) {\n    if (w.raining)               vent = { act: \"Keep windows closed\", why: \"It is raining outside.\", tone: \"bad\", code: \"closed\" };\n    else if (D.ahGain >= 2)      vent = { act: \"Open the windows\", why: \"Outdoor air holds \" + f1(D.ahGain) + \" g/m³ less water than the room.\", tone: \"good\", code: \"open\" };\n    else if (D.ahGain <= -2)     vent = { act: \"Keep windows closed\", why: \"Outdoor air holds \" + f1(-D.ahGain) + \" g/m³ more water than the room.\", tone: \"bad\", code: \"closed\" };\n    else                         vent = { act: \"Ventilation changes little\", why: \"Indoor and outdoor air hold about the same water.\", tone: \"info\", code: \"neutral\" };\n}\n\n// ---------- API forecast: best window to ventilate ----------\nlet forecast = null, best = null;\nif (fc && fc.list) {\n    forecast = fc.list.map(x => {\n        const gain = sLive ? D.iah - x.ah : null;\n        const state = x.rain ? \"rain\" : gain === null ? \"neutral\" : gain >= 2 ? \"open\" : gain <= -2 ? \"closed\" : \"neutral\";\n        return { ts: x.ts, t: x.t, h: x.h, ah: x.ah, pop: x.pop, desc: x.desc, gain: gain, state: state };\n    });\n    const cand = forecast.filter(x => x.state === \"open\").sort((a, b) => b.gain - a.gain);\n    if (cand.length) { best = cand[0]; best.best = true; }\n}\n\n// ---------- outdoor pressure trend from the API forecast (hPa per 3 h) ----------\nlet outTrend = null;\nif (fc && fc.list && fc.list.length >= 2 && Number.isFinite(fc.list[0].p) && Number.isFinite(fc.list[1].p)) {\n    outTrend = fc.list[1].p - fc.list[0].p;\n}\n\n// ---------- instant diagnostics (no history needed) ----------\nconst ins = {};\nif (sLive && wLive) {\n    const gap = D.iah - D.oah;\n    ins.gap = gap;\n    if (gap >= 2)       { ins.source = \"Wetter than outside\"; ins.sourceWhy = \"The room holds more water than the outdoor air. Open windows would dry it, unless it is raining.\"; }\n    else if (gap <= -2) { ins.source = \"Drier than outside\"; ins.sourceWhy = \"The outdoor air holds more water than the room, so letting it in would add moisture.\"; }\n    else                { ins.source = \"Balanced\"; ins.sourceWhy = \"Indoor and outdoor air hold about the same water.\"; }\n    if (forecast && forecast.length) ins.outlook = forecast[0].ah - D.oah;\n    ins.dry = { now: s.h, swap: rhFromAh(s.t, D.oah) };\n}\nif (sLive) {\n    const target = emc(s.t, s.h);\n    ins.wood = { target: target };\n    ins.woodVerdict =\n          target > 13   ? \"Danger: swelling, glue joints and finish are at risk if this lasts\"\n        : target > 11   ? \"Too humid: doors stick and instrument action rises\"\n        : target > 9.5  ? \"Slightly humid: fine for furniture, not ideal for instruments\"\n        : target < 6    ? \"Too dry: cracking risk\"\n        :                 \"Safe range\";\n}\n\n// ---------- recommendations ----------\nconst recs = [];\nif (!sLive) recs.push({ tone: \"bad\", title: \"Indoor sensor is offline\", detail: \"No reading on stm32/da for over 3 minutes. Check the STM32 board and its MQTT connection.\" });\nif (!wLive) recs.push({ tone: \"warn\", title: \"Outdoor weather is missing\", detail: \"Add your OpenWeatherMap key in the flow tab's environment variables (OWM_KEY). Until then only indoor advice is shown.\" });\nif (vent) recs.push({ tone: vent.tone, title: vent.act, detail: vent.why });\nif (sLive && s.h >= 70 && (!vent || vent.code !== \"open\")) {\n    recs.push({ tone: \"warn\", title: \"Dry the room mechanically\", detail: \"Outside air cannot dry the room right now. Run the AC in dry mode or use a dehumidifier.\" });\n}\nif (best && (!vent || vent.code !== \"open\")) {\n    recs.push({ tone: \"info\", title: \"Best time to open windows\", detail: \"The API forecast shows outdoor air holding about \" + f1(best.gain) + \" g/m³ less water around {t}.\", ts: best.ts });\n}\nif (sLive && D.margin < 2) {\n    recs.push({ tone: D.margin <= 0 ? \"bad\" : \"warn\", title: D.margin <= 0 ? \"Surfaces are collecting water\" : \"Surfaces are close to condensing\",\n                detail: \"Cold walls, windows or AC ducts at \" + f1(surface) + \"°C against a dew point of \" + f1(D.idp) + \"°C. Wipe them and keep air moving.\" });\n}\nif (ins.woodVerdict && ins.woodVerdict !== \"Safe range\") {\n    const v = ins.woodVerdict;\n    recs.push({ tone: v.startsWith(\"Danger\") ? \"warn\" : v.startsWith(\"Slightly\") ? \"info\" : \"warn\", title: \"Wood and instruments\", detail: v + \".\" });\n}\nif (typeof outTrend === \"number\") {\n    if (outTrend <= -2)     recs.push({ tone: \"info\", title: \"Pressure is forecast to fall\", detail: \"The API forecast shows outdoor pressure dropping \" + f1(-outTrend) + \" hPa over the next 3 hours. Rain may be on the way, so bring in laundry.\" });\n    else if (outTrend >= 2) recs.push({ tone: \"info\", title: \"Pressure is forecast to rise\", detail: \"The API forecast shows outdoor pressure rising \" + f1(outTrend) + \" hPa over the next 3 hours. Weather is likely clearing.\" });\n}\nif (!recs.length) recs.push({ tone: \"good\", title: \"All clear\", detail: \"Nothing needs your attention right now.\" });\nconst pri = { bad: 0, warn: 1, info: 2, good: 3 };\nrecs.sort((a, b) => pri[a.tone] - pri[b.tone]);\n\nmsg.payload = {\n    now: now, surface: surface,\n    live: { s: sLive, w: wLive, sAge: s ? Math.round((now - s.ts) / 1000) : null, wAge: w ? Math.round((now - w.ts) / 1000) : null },\n    sensor: sLive ? s : null,\n    weather: wLive ? w : null,\n    derived: D,\n    risk: { score: score, max: 6, level: level, headline: headline, tone: tone, factors: factors },\n    vent: vent, recs: recs, insight: ins, forecast: forecast, outTrend: outTrend\n};\nreturn msg;\n",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 680,
+        "wires": [
+            [
+                "ec6292086ddc3286"
+            ]
+        ]
+    },
+    {
+        "id": "ec6292086ddc3286",
+        "type": "http response",
+        "z": "d287c8679ecf4a01",
+        "name": "",
+        "statusCode": "",
+        "headers": {
+            "Cache-Control": "no-store"
+        },
+        "x": 580,
+        "y": 680,
+        "wires": []
+    },
+    {
+        "id": "7b7021ab901524df",
+        "type": "mqtt-broker",
+        "name": "emqx",
+        "broker": "broker.emqx.io",
+        "port": "1883",
+        "clientid": "",
+        "autoConnect": true,
+        "usetls": false,
+        "protocolVersion": "4",
+        "keepalive": "60",
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "closeTopic": "",
+        "willTopic": ""
+    }
+]
