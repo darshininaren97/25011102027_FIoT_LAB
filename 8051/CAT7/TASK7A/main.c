@@ -1,148 +1,101 @@
-TASK7A
 
+#include <reg51.h>
 
-// Include the common LCD driver functions here
-#include <reg52.h>
+#define PORT P3
 
-#define LCD_PORT P2
-
-sbit RS = P2^0;
-sbit EN = P2^1;
+sbit RS = P3^2;
+sbit E  = P3^3;
 
 // Delay function
-void delay(unsigned int t)
+void delay()
 {
-    unsigned int i, j;
+    int i, j;
 
-    for(i = 0; i < t; i++)
-        for(j = 0; j < 120; j++);
+    for(i = 0; i < 2; i++)
+    {
+        for(j = 0; j < 1275; j++)
+        {
+        }
+    }
 }
 
 // Send 4 bits to LCD
-void lcd_nibble(unsigned char value)
+void lcd_send_nibble(unsigned char nibble)
 {
-    LCD_PORT = (LCD_PORT & 0x0F) | (value & 0xF0);
+    PORT = (PORT & 0x0F) | (nibble & 0xF0);
 
-    EN = 1;
-    delay(1);
-    EN = 0;
+    E = 1;
+    delay();
+
+    E = 0;
+    delay();
 }
 
-// Send LCD command
+// Send command to LCD
 void lcd_cmd(unsigned char cmd)
 {
     RS = 0;
 
-    lcd_nibble(cmd);
-    lcd_nibble(cmd << 4);
+    lcd_send_nibble(cmd);
+    lcd_send_nibble(cmd << 4);
 
-    delay(2);
+    delay();
 }
 
-// Send character
-void lcd_data(unsigned char dat)
+// Send character/data to LCD
+void lcd_data(unsigned char d)
 {
     RS = 1;
 
-    lcd_nibble(dat);
-    lcd_nibble(dat << 4);
+    lcd_send_nibble(d);
+    lcd_send_nibble(d << 4);
 
-    delay(2);
+    delay();
 }
 
-// Initialize LCD in 4-bit mode
-void lcd_init(void)
+// Initialize LCD
+void lcd_init()
 {
-    delay(20);
+    delay();
 
-    RS = 0;
-    lcd_nibble(0x30);
-    delay(5);
+    lcd_send_nibble(0x20);  // 4-bit mode
 
-    lcd_nibble(0x30);
-    delay(1);
+    lcd_cmd(0x28);          // 4-bit, 2 lines, 5x8 font
+    lcd_cmd(0x0C);          // Display ON, cursor OFF
+    lcd_cmd(0x06);          // Increment cursor
+    lcd_cmd(0x01);          // Clear display
 
-    lcd_nibble(0x30);
-    delay(1);
-
-    lcd_nibble(0x20);
-
-    lcd_cmd(0x28);  // 4-bit, 2-line mode
-    lcd_cmd(0x0C);  // Display ON, cursor OFF
-    lcd_cmd(0x06);  // Increment cursor
-    lcd_cmd(0x01);  // Clear display
-
-    delay(5);
-}
-
-// Set cursor position
-void lcd_goto(unsigned char row, unsigned char column)
-{
-    if(row == 0)
-        lcd_cmd(0x80 + column);
-    else
-        lcd_cmd(0xC0 + column);
+    delay();
+    delay();
 }
 
 // Display string
 void lcd_puts(char *str)
 {
-    while(*str)
-    {
-        lcd_data(*str);
-        str++;
-    }
-}
+    int i = 0;
 
-// Display integer
-void lcd_print_number(unsigned int num)
-{
-    unsigned char digits[5];
-    unsigned char i = 0;
-
-    if(num == 0)
+    while(str[i] != '\0')
     {
-        lcd_data('0');
-        return;
-    }
-
-    while(num > 0)
-    {
-        digits[i] = (num % 10) + '0';
-        num = num / 10;
+        lcd_data(str[i]);
         i++;
     }
-
-    while(i > 0)
-    {
-        i--;
-        lcd_data(digits[i]);
-    }
 }
 
-// Clear LCD
-void lcd_clear(void)
-{
-    lcd_cmd(0x01);
-    delay(5);
-}
-
-
-void main(void)
+// Main program
+void main()
 {
     lcd_init();
 
-    // First row
-    lcd_goto(0, 0);
+    // Display individual character
+    lcd_data('A');
+
+    // Display text on first row
+    lcd_cmd(0x80);
     lcd_puts("HELLO WORLD");
 
-    // Second row
-    lcd_goto(1, 0);
-    lcd_puts("AT89S52");
-
-    // Display individual character
-    lcd_goto(1, 10);
-    lcd_data('A');
+    // Display text on second row
+    lcd_cmd(0xC0);
+    lcd_puts("8051 LCD");
 
     while(1)
     {
