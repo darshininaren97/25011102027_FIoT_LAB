@@ -18,10 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include <string.h>
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +63,6 @@ static void MX_USART2_UART_Init(void);
   * @brief  The application entry point.
   * @retval int
   */
-	
 int main(void)
 {
 
@@ -96,20 +95,74 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  /* USER CODE BEGIN WHILE */
+  uint8_t cmd;
+	
+  char c2[] = "\n\rINVALID\r\n";
+	char c3[]="\n\rLED IS TURNED ON\r\n";
+	char c4[]="\n\rLED IS TURNED OFF\r\n";
+	char c5[]="\n\rLED IS TOGGLING\r\n";
+  char c[20];
+  int i = 0;
+
   while (1)
   {
+    HAL_UART_Receive(&huart2, (uint8_t *)&cmd, 1, HAL_MAX_DELAY);
+    HAL_UART_Transmit(&huart2, (uint8_t *)&cmd, 1, HAL_MAX_DELAY); // Echo back
+
+    if (cmd == '\r' || cmd == '\n')
+    {
+      // Only process if the buffer actually contains characters
+      if (i > 0)
+      {
+        c[i] = '\0';
+
+        if (strcmp(c, "LED ON") == 0)
+        {
+          HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+					 HAL_UART_Transmit(&huart2, (uint8_t *)c3, strlen(c3), HAL_MAX_DELAY);
+        }
+        else if (strcmp(c, "LED OFF") == 0)
+        {
+          HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
+					HAL_UART_Transmit(&huart2, (uint8_t *)c4, strlen(c4), HAL_MAX_DELAY);
+        }
+				else if (strcmp(c, "LED TOGGLE") == 0)
+        {
+					HAL_UART_Transmit(&huart2, (uint8_t *)c5, strlen(c5), HAL_MAX_DELAY);
+					while(1){
+          HAL_GPIO_TogglePin(GPIOC, GPIO_PIN_13);
+					HAL_Delay(300);
+					if(HAL_UART_Receive(&huart2,(uint8_t *)&cmd,1,0)==HAL_OK){
+break;}
+					}
+					
+        }
+				
+        else
+        {
+          HAL_UART_Transmit(&huart2, (uint8_t *)c2, strlen(c2), HAL_MAX_DELAY);
+					 
+        }
+
+        i = 0; // Reset buffer index for next command
+      }
+    }
+    else
+    {
+      if (i < sizeof(c) - 1)
+      {
+        c[i] = cmd;
+        i++;
+      }
+    }
+  }
     /* USER CODE END WHILE */
-		uint8_t cmd;
-		
-		//HAL_UART_Receive(&huart2, &cmd,1,HAL_MAX_DELAY);
-		HAL_UART_Receive(&huart2, &cmd,1,HAL_MAX_DELAY);
-		HAL_UART_Transmit(&huart2, &cmd,1,HAL_MAX_DELAY);
-		
-		
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
-}
+
 
 /**
   * @brief System Clock Configuration
@@ -196,18 +249,19 @@ static void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_11, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
 
-  /*Configure GPIO pin : PA11 */
-  GPIO_InitStruct.Pin = GPIO_PIN_11;
+  /*Configure GPIO pin : PC13 */
+  GPIO_InitStruct.Pin = GPIO_PIN_13;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

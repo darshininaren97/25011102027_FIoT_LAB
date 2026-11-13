@@ -1,4 +1,4 @@
-uart/stm32f1xx_hal_cortex.o: \
+uasrt/stm32f1xx_hal_cortex.o: \
   ..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cortex.c \
   ..\Drivers\STM32F1xx_HAL_Driver\Inc\stm32f1xx_hal.h \
   ..\Core\Inc\stm32f1xx_hal_conf.h \
