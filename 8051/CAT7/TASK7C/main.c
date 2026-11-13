@@ -1,233 +1,299 @@
-TASK7C
 
-// Include the common LCD driver functions here
-#include <reg52.h>
+#include <reg51.h>
 
-#define LCD_PORT P2
+#define PORT P3
 
-sbit RS = P2^0;
-sbit EN = P2^1;
+sbit RS = P3^2;
+sbit E  = P3^3;
 
-// Delay function
-void delay(unsigned int t)
+// Keypad connections
+sbit UP_ROW    = P2^3;
+sbit DOWN_ROW  = P2^2;
+sbit LEFT_ROW  = P2^1;
+sbit RIGHT_ROW = P2^0;
+
+sbit COL = P2^7;
+
+// Delay
+void delay()
 {
-    unsigned int i, j;
+    int i, j;
 
-    for(i = 0; i < t; i++)
-        for(j = 0; j < 120; j++);
+    for(i = 0; i < 2; i++)
+    {
+        for(j = 0; j < 1275; j++)
+        {
+        }
+    }
 }
 
-// Send 4 bits to LCD
-void lcd_nibble(unsigned char value)
+void delay_button()
 {
-    LCD_PORT = (LCD_PORT & 0x0F) | (value & 0xF0);
+    int i, j;
 
-    EN = 1;
-    delay(1);
-    EN = 0;
+    for(i = 0; i < 5; i++)
+    {
+        for(j = 0; j < 5; j++)
+        {
+        }
+    }
 }
 
-// Send LCD command
+// Send nibble
+void lcd_send_nibble(unsigned char nibble)
+{
+    PORT = (PORT & 0x0F) | (nibble & 0xF0);
+
+    E = 1;
+    delay();
+
+    E = 0;
+    delay();
+}
+
+// LCD command
 void lcd_cmd(unsigned char cmd)
 {
     RS = 0;
 
-    lcd_nibble(cmd);
-    lcd_nibble(cmd << 4);
+    lcd_send_nibble(cmd);
+    lcd_send_nibble(cmd << 4);
 
-    delay(2);
+    delay();
 }
 
-// Send character
-void lcd_data(unsigned char dat)
+// LCD data
+void lcd_data(unsigned char d)
 {
     RS = 1;
 
-    lcd_nibble(dat);
-    lcd_nibble(dat << 4);
+    lcd_send_nibble(d);
+    lcd_send_nibble(d << 4);
 
-    delay(2);
+    delay();
 }
 
-// Initialize LCD in 4-bit mode
-void lcd_init(void)
+// LCD initialization
+void lcd_init()
 {
-    delay(20);
+    delay();
 
-    RS = 0;
-    lcd_nibble(0x30);
-    delay(5);
+    lcd_send_nibble(0x20);
 
-    lcd_nibble(0x30);
-    delay(1);
+    lcd_cmd(0x28);
+    lcd_cmd(0x0E);
+    lcd_cmd(0x06);
+    lcd_cmd(0x01);
 
-    lcd_nibble(0x30);
-    delay(1);
-
-    lcd_nibble(0x20);
-
-    lcd_cmd(0x28);  // 4-bit, 2-line mode
-    lcd_cmd(0x0C);  // Display ON, cursor OFF
-    lcd_cmd(0x06);  // Increment cursor
-    lcd_cmd(0x01);  // Clear display
-
-    delay(5);
+    delay();
+    delay();
 }
 
-// Set cursor position
-void lcd_goto(unsigned char row, unsigned char column)
+// Cursor positioning
+void lcd_goto(unsigned char row, unsigned char col)
 {
-    if(row == 0)
-        lcd_cmd(0x80 + column);
-    else
-        lcd_cmd(0xC0 + column);
+    if(row == 1)
+    {
+        lcd_cmd(0x80 + (col - 1));
+    }
+
+    if(row == 2)
+    {
+        lcd_cmd(0xC0 + (col - 1));
+    }
 }
 
 // Display string
 void lcd_puts(char *str)
 {
-    while(*str)
-    {
-        lcd_data(*str);
-        str++;
-    }
-}
+    int i = 0;
 
-// Display integer
-void lcd_print_number(unsigned int num)
-{
-    unsigned char digits[5];
-    unsigned char i = 0;
-
-    if(num == 0)
+    while(str[i] != '\0')
     {
-        lcd_data('0');
-        return;
-    }
-
-    while(num > 0)
-    {
-        digits[i] = (num % 10) + '0';
-        num = num / 10;
+        lcd_data(str[i]);
         i++;
     }
-
-    while(i > 0)
-    {
-        i--;
-        lcd_data(digits[i]);
-    }
 }
 
-// Clear LCD
-void lcd_clear(void)
+// Read keypad
+// 1 = UP
+// 2 = DOWN
+// 3 = LEFT
+// 4 = RIGHT
+// 0 = No key
+
+unsigned char check_button()
 {
-    lcd_cmd(0x01);
-    delay(5);
-}
+    // UP
+    UP_ROW = 0;
+    DOWN_ROW = 1;
+    LEFT_ROW = 1;
+    RIGHT_ROW = 1;
 
+    COL = 1;
 
-
-
-#include <reg52.h>
-
-// Keypad connected to Port 1
-// Rows: P1.0 to P1.3
-// Columns: P1.4 to P1.7
-
-// Scan keypad
-char keypad_getkey(void)
-{
-    unsigned char row, col;
-    unsigned char value;
-
-    char keys[4][4] =
+    if(COL == 0)
     {
-        {'1','2','3','A'},
-        {'4','5','6','B'},
-        {'7','8','9','C'},
-        {'*','0','#','D'}
-    };
+        delay_button();
 
-    for(row = 0; row < 4; row++)
-    {
-        P1 = 0xFF;
-
-        // Make one row LOW
-        P1 = 0xF0 | (0x0F & ~(1 << row));
-
-        value = P1;
-
-        for(col = 0; col < 4; col++)
+        if(COL == 0)
         {
-            if((value & (0x10 << col)) == 0)
-            {
-                return keys[row][col];
-            }
+            while(COL == 0);
+
+            return 1;
+        }
+    }
+
+    // DOWN
+    UP_ROW = 1;
+    DOWN_ROW = 0;
+    LEFT_ROW = 1;
+    RIGHT_ROW = 1;
+
+    COL = 1;
+
+    if(COL == 0)
+    {
+        delay_button();
+
+        if(COL == 0)
+        {
+            while(COL == 0);
+
+            return 2;
+        }
+    }
+
+    // LEFT
+    UP_ROW = 1;
+    DOWN_ROW = 1;
+    LEFT_ROW = 0;
+    RIGHT_ROW = 1;
+
+    COL = 1;
+
+    if(COL == 0)
+    {
+        delay_button();
+
+        if(COL == 0)
+        {
+            while(COL == 0);
+
+            return 3;
+        }
+    }
+
+    // RIGHT
+    UP_ROW = 1;
+    DOWN_ROW = 1;
+    LEFT_ROW = 1;
+    RIGHT_ROW = 0;
+
+    COL = 1;
+
+    if(COL == 0)
+    {
+        delay_button();
+
+        if(COL == 0)
+        {
+            while(COL == 0);
+
+            return 4;
         }
     }
 
     return 0;
 }
 
-void main(void)
+// Main program
+void main()
 {
-    unsigned char row = 0;
-    unsigned char col = 0;
+    unsigned char save = 'A';
+    unsigned char button;
 
-    char key;
+    unsigned char row = 1;
+    unsigned char col = 1;
+
+    // Initialize keypad
+    UP_ROW = 1;
+    DOWN_ROW = 1;
+    LEFT_ROW = 1;
+    RIGHT_ROW = 1;
+
+    COL = 1;
 
     lcd_init();
 
-    // Initial character position
-    lcd_goto(row, col);
-    lcd_data('X');
+    lcd_data(save);
 
-    P1 = 0xFF;
+    lcd_goto(2, 1);
+    lcd_puts("HELLO");
+
+    lcd_goto(row, col);
 
     while(1)
     {
-        key = keypad_getkey();
+        button = check_button();
 
-        if(key != 0)
+        // UP
+        if(button == 1)
         {
-            delay(20);  // Debouncing
-
-            if(keypad_getkey() == key)
+            if(row > 1)
             {
-                // Erase old character
                 lcd_goto(row, col);
                 lcd_data(' ');
 
-                // Move according to key
-                if(key == '2' && row > 0)
-                {
-                    row--;
-                }
+                row--;
 
-                else if(key == '8' && row < 1)
-                {
-                    row++;
-                }
-
-                else if(key == '4' && col > 0)
-                {
-                    col--;
-                }
-
-                else if(key == '6' && col < 15)
-                {
-                    col++;
-                }
-
-                // Display at new position
                 lcd_goto(row, col);
-                lcd_data('X');
+                lcd_data(save);
+            }
+        }
 
-                // Wait until key is released
-                while(keypad_getkey() != 0);
+        // DOWN
+        else if(button == 2)
+        {
+            if(row < 2)
+            {
+                lcd_goto(row, col);
+                lcd_data(' ');
 
-                delay(20);
+                row++;
+
+                lcd_goto(row, col);
+                lcd_data(save);
+            }
+        }
+
+        // LEFT
+        else if(button == 3)
+        {
+            if(col > 1)
+            {
+                lcd_goto(row, col);
+                lcd_data(' ');
+
+                col--;
+
+                lcd_goto(row, col);
+                lcd_data(save);
+            }
+        }
+
+        // RIGHT
+        else if(button == 4)
+        {
+            if(col < 16)
+            {
+                lcd_goto(row, col);
+                lcd_data(' ');
+
+                col++;
+
+                lcd_goto(row, col);
+                lcd_data(save);
             }
         }
     }
