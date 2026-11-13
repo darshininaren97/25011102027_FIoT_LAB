@@ -1,10 +1,10 @@
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 1   
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 1   
 
 
 C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
-OBJECT MODULE PLACED IN main.OBJ
-COMPILER INVOKED BY: C:\Users\ndars\Music\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) DEBUG OBJECTEXTEND CODE PRINT(.\Listi
-                    -ngs\main.lst) TABS(2)
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Users\ndars\Music\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND CODE PRINT(
+                    -.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
 
 line level    source
 
@@ -62,7 +62,7 @@ line level    source
   52   1      }
   53          
   54          // LCD command
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 2   
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 2   
 
   55          void lcd_cmd(unsigned char cmd)
   56          {
@@ -126,7 +126,7 @@ line level    source
  114   2              i++;
  115   2          }
  116   1      }
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 3   
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 3   
 
  117          
  118          // Read keypad
@@ -190,7 +190,7 @@ line level    source
  176   1          {
  177   2              delay_button();
  178   2      
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 4   
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 4   
 
  179   2              if(COL == 0)
  180   2              {
@@ -254,7 +254,7 @@ line level    source
  238   2              button = check_button();
  239   2      
  240   2              // UP
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 5   
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 5   
 
  241   2              if(button == 1)
  242   2              {
@@ -316,7 +316,7 @@ line level    source
  298   3              }
  299   2          }
  300   1      }
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 6   
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 6   
 
 ASSEMBLY LISTING OF GENERATED OBJECT CODE
 
@@ -380,7 +380,7 @@ ASSEMBLY LISTING OF GENERATED OBJECT CODE
                                            ; SOURCE LINE # 38
 0006 0D                INC     R5
 0007 BD0001            CJNE    R5,#00H,?C0058
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 7   
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 7   
 
 000A 0C                INC     R4
 000B         ?C0058:
@@ -444,7 +444,7 @@ ASSEMBLY LISTING OF GENERATED OBJECT CODE
                                            ; SOURCE LINE # 62
 0007 020000      R     LJMP    delay
              ; FUNCTION _lcd_cmd (END)
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 8   
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 8   
 
 
              ; FUNCTION L?0063 (BEGIN)
@@ -508,7 +508,7 @@ ASSEMBLY LISTING OF GENERATED OBJECT CODE
 0008 B90107            CJNE    R1,#01H,?C0019
                                            ; SOURCE LINE # 96
                                            ; SOURCE LINE # 97
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 9   
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 9   
 
 000B EA                MOV     A,R2
 000C 247F              ADD     A,#07FH
@@ -572,7 +572,7 @@ ASSEMBLY LISTING OF GENERATED OBJECT CODE
                                            ; SOURCE LINE # 128
 0000 C2A3              CLR     UP_ROW
                                            ; SOURCE LINE # 129
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 10  
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 10  
 
 0002 D2A2              SETB    DOWN_ROW
                                            ; SOURCE LINE # 130
@@ -636,7 +636,7 @@ ASSEMBLY LISTING OF GENERATED OBJECT CODE
                                            ; SOURCE LINE # 173
 003A D2A7              SETB    COL
                                            ; SOURCE LINE # 175
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 11  
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 11  
 
 003C 20A70C            JB      COL,?C0034
                                            ; SOURCE LINE # 176
@@ -700,7 +700,7 @@ ASSEMBLY LISTING OF GENERATED OBJECT CODE
                                            ; SOURCE LINE # 220
 0009 D2A3              SETB    UP_ROW
                                            ; SOURCE LINE # 221
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 12  
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 12  
 
 000B D2A2              SETB    DOWN_ROW
                                            ; SOURCE LINE # 222
@@ -764,7 +764,7 @@ ASSEMBLY LISTING OF GENERATED OBJECT CODE
 0050 9402              SUBB    A,#02H
 0052 50DA              JNC     ?C0042
                                            ; SOURCE LINE # 259
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 13  
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 13  
 
                                            ; SOURCE LINE # 260
                                            ; SOURCE LINE # 261
@@ -828,7 +828,7 @@ ASSEMBLY LISTING OF GENERATED OBJECT CODE
                                            ; SOURCE LINE # 297
                                            ; SOURCE LINE # 298
                                            ; SOURCE LINE # 299
-C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:06:25 PAGE 14  
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:34:28 PAGE 14  
 
 0091 020000      R     LJMP    ?C0042
              ; FUNCTION main (END)

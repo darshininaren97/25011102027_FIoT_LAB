@@ -1,20 +1,21 @@
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                    11/14/2026  00:06:26  PAGE 1
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                    11/14/2026  00:34:28  PAGE 1
 
 
 BL51 BANKED LINKER/LOCATER V6.22.4.0, INVOKED BY:
-C:\USERS\NDARS\MUSIC\C51\BIN\BL51.EXE STARTUP.obj, main.obj TO TASK7C PRINT (.\Listings\TASK7C.m51) RAMSIZE (256)
+C:\USERS\NDARS\MUSIC\C51\BIN\BL51.EXE .\Objects\STARTUP.obj, .\Objects\main.obj TO .\Objects\TASK7C PRINT (.\Listings\TA
+>> SK7C.m51) RAMSIZE (256)
 
 
 MEMORY MODEL: SMALL
 
 
 INPUT MODULES INCLUDED:
-  STARTUP.obj (?C_STARTUP)
-  main.obj (MAIN)
+  .\Objects\STARTUP.obj (?C_STARTUP)
+  .\Objects\main.obj (MAIN)
   C:\USERS\NDARS\MUSIC\C51\LIB\C51S.LIB (?C?CLDOPTR)
 
 
-LINK MAP OF MODULE:  TASK7C (?C_STARTUP)
+LINK MAP OF MODULE:  .\Objects\TASK7C (?C_STARTUP)
 
 
             TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
@@ -44,7 +45,7 @@ LINK MAP OF MODULE:  TASK7C (?C_STARTUP)
 
 
 
-OVERLAY MAP OF MODULE:   TASK7C (?C_STARTUP)
+OVERLAY MAP OF MODULE:   .\Objects\TASK7C (?C_STARTUP)
 
 
 SEGMENT                             DATA_GROUP 
@@ -58,10 +59,10 @@ SEGMENT                             DATA_GROUP
   +--> ?PR?_LCD_DATA?MAIN
   +--> ?PR?_LCD_GOTO?MAIN
   +--> ?CO?MAIN
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:34:28  PAGE 2
+
+
   +--> ?PR?_LCD_PUTS?MAIN
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:06:26  PAGE 2
-
-
   +--> ?PR?CHECK_BUTTON?MAIN
 
 ?PR?LCD_INIT?MAIN                 -----    -----
@@ -92,7 +93,7 @@ SEGMENT                             DATA_GROUP
 
 
 
-SYMBOL TABLE OF MODULE:  TASK7C (?C_STARTUP)
+SYMBOL TABLE OF MODULE:  .\Objects\TASK7C (?C_STARTUP)
 
   VALUE           TYPE          NAME
   ----------------------------------
@@ -118,10 +119,10 @@ SYMBOL TABLE OF MODULE:  TASK7C (?C_STARTUP)
   D:00A0H         SYMBOL        PPAGE_SFR
   D:0081H         SYMBOL        SP
   C:09FCH         SYMBOL        STARTUP1
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:34:28  PAGE 3
+
+
   N:0000H         SYMBOL        XBPSTACK
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:06:26  PAGE 3
-
-
   N:0000H         SYMBOL        XBPSTACKTOP
   N:0000H         SYMBOL        XDATALEN
   N:0000H         SYMBOL        XDATASTART
@@ -178,10 +179,10 @@ SYMBOL TABLE OF MODULE:  TASK7C (?C_STARTUP)
   C:0992H         LINE#         30
   C:0992H         LINE#         31
   C:0992H         LINE#         34
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:34:28  PAGE 4
+
+
   C:0995H         LINE#         35
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:06:26  PAGE 4
-
-
   C:0995H         LINE#         36
   C:0998H         LINE#         37
   C:0998H         LINE#         38
@@ -238,10 +239,10 @@ SYMBOL TABLE OF MODULE:  TASK7C (?C_STARTUP)
   -------         PROC          L?0066
   -------         ENDPROC       L?0066
   C:09CCH         SYMBOL        L?0067
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:34:28  PAGE 5
+
+
   -------         PROC          _LCD_GOTO
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:06:26  PAGE 5
-
-
   D:0001H         SYMBOL        row
   D:0002H         SYMBOL        col
   C:09D0H         LINE#         93
@@ -298,10 +299,10 @@ SYMBOL TABLE OF MODULE:  TASK7C (?C_STARTUP)
   C:08BAH         LINE#         157
   C:08BDH         LINE#         159
   C:08C0H         LINE#         160
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:34:28  PAGE 6
+
+
   C:08C0H         LINE#         161
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:06:26  PAGE 6
-
-
   C:08C3H         LINE#         163
   C:08C6H         LINE#         164
   C:08C6H         LINE#         165
@@ -358,10 +359,10 @@ SYMBOL TABLE OF MODULE:  TASK7C (?C_STARTUP)
   C:081BH         LINE#         231
   C:0822H         LINE#         232
   C:082BH         LINE#         234
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:34:28  PAGE 7
+
+
   C:082EH         LINE#         236
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:06:26  PAGE 7
-
-
   C:082EH         LINE#         237
   C:082EH         LINE#         238
   C:0833H         LINE#         241
@@ -418,10 +419,10 @@ SYMBOL TABLE OF MODULE:  TASK7C (?C_STARTUP)
 
 ******************************************************************************
 * RESTRICTED VERSION WITH 0800H BYTE CODE SIZE LIMIT; USED: 01EEH BYTE (24%) *
+BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:34:28  PAGE 8
+
+
 ******************************************************************************
-BL51 BANKED LINKER/LOCATER V6.22.4.0                                                  11/14/2026  00:06:26  PAGE 8
-
-
 
 Program Size: data=18.0 xdata=0 code=539
 LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)
