@@ -1,0 +1,110 @@
+C51 COMPILER V9.60.7.0   DIRECTACCESSLEDCONTROL                                            11/13/2026 23:56:16 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE DIRECTACCESSLEDCONTROL
+OBJECT MODULE PLACED IN .\Objects\DirectAccessLEDControl.obj
+COMPILER INVOKED BY: C:\Users\ndars\Music\C51\BIN\C51.EXE DirectAccessLEDControl.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECT
+                    -EXTEND CODE PRINT(.\Listings\DirectAccessLEDControl.lst) TABS(2) OBJECT(.\Objects\DirectAccessLEDControl.obj)
+
+line level    source
+
+   1          
+   2          /*The following program is written to compile a minimal bare-metal C program, program the device, and cont
+             -rol an LED by directly accessing 
+   3          the microcontroller's memory-mapped GPIO registers*/
+   4          
+   5          #include<stdio.h>
+   6          #include<reg51.h>
+   7          
+   8          
+   9          sbit ledpin=P1^0;
+  10          
+  11          //Defining and declaring the delay function
+  12          void delay(){
+  13   1        int i,j;
+  14   1        for(i=0;i<500;i++){
+  15   2          for(j=0;j<500;j++){
+  16   3          }
+  17   2        }
+  18   1      }
+  19          
+  20          //Main function
+  21          void main(){
+  22   1        while(1){
+  23   2          ledpin=1;
+  24   2          delay();
+  25   2          ledpin=0;
+  26   2          delay();
+  27   2        }
+  28   1      }
+C51 COMPILER V9.60.7.0   DIRECTACCESSLEDCONTROL                                            11/13/2026 23:56:16 PAGE 2   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION delay (BEGIN)
+                                           ; SOURCE LINE # 12
+                                           ; SOURCE LINE # 14
+;---- Variable 'i' assigned to Register 'R6/R7' ----
+0000 E4                CLR     A
+0001 FF                MOV     R7,A
+0002 FE                MOV     R6,A
+0003         ?C0001:
+                                           ; SOURCE LINE # 15
+;---- Variable 'j' assigned to Register 'R4/R5' ----
+0003 E4                CLR     A
+0004 FD                MOV     R5,A
+0005 FC                MOV     R4,A
+0006         ?C0004:
+                                           ; SOURCE LINE # 16
+0006 0D                INC     R5
+0007 BD0001            CJNE    R5,#00H,?C0011
+000A 0C                INC     R4
+000B         ?C0011:
+000B BC01F8            CJNE    R4,#01H,?C0004
+000E BDF4F5            CJNE    R5,#0F4H,?C0004
+                                           ; SOURCE LINE # 17
+0011         ?C0003:
+0011 0F                INC     R7
+0012 BF0001            CJNE    R7,#00H,?C0012
+0015 0E                INC     R6
+0016         ?C0012:
+0016 BE01EA            CJNE    R6,#01H,?C0001
+0019 BFF4E7            CJNE    R7,#0F4H,?C0001
+                                           ; SOURCE LINE # 18
+001C         ?C0007:
+001C 22                RET     
+             ; FUNCTION delay (END)
+
+             ; FUNCTION main (BEGIN)
+                                           ; SOURCE LINE # 21
+0000         ?C0008:
+                                           ; SOURCE LINE # 22
+                                           ; SOURCE LINE # 23
+0000 D290              SETB    ledpin
+                                           ; SOURCE LINE # 24
+0002 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 25
+0005 C290              CLR     ledpin
+                                           ; SOURCE LINE # 26
+0007 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 27
+000A 80F4              SJMP    ?C0008
+             ; FUNCTION main (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     41    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =   ----    ----
+   IDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.7.0   DIRECTACCESSLEDCONTROL                                            11/13/2026 23:56:16 PAGE 3   
+
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

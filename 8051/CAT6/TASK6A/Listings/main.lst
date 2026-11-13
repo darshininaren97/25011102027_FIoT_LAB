@@ -1,0 +1,127 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:09:30 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Users\ndars\Music\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND CODE PRINT(
+                    -.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          
+   2          
+   3          #include <reg51.h> 
+   4          
+   5          char message[] = "hello\r\n";
+   6          unsigned char index = 0;
+   7          
+   8          void serial_interrupt(void) interrupt 4 {
+   9   1          if(TI) {
+  10   2              TI = 0; // Clear transmit interrupt flag
+  11   2              if(index == 7) { // 7 characters including carriage return and newline
+  12   3                  index = 0; // Reset index after sending the message
+  13   3              }
+  14   2              SBUF = message[index++]; // Send next character 
+  15   2          }
+  16   1      }
+  17          
+  18          
+  19          void main() {
+  20   1          // Initialize serial communication
+  21   1          SCON = 0x50; // Set serial mode to 8-bit UART, enable reception
+  22   1          TMOD |= 0x20; // Set Timer1 in mode 2 (8-bit auto-reload)
+  23   1          TH1 = 0xFD; // Set baud rate to 9600
+  24   1          TR1 = 1; // Start Timer1
+  25   1          ES = 1; // Enable serial interrupt
+  26   1          EA = 1; // Enable global interrupts
+  27   1      
+  28   1          SBUF = message[index++]; // Start sending the first character
+  29   1          while(1) {
+  30   2              // Main loop can perform other tasks or enter low power mode
+  31   2          }
+  32   1      }
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:09:30 PAGE 2   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION serial_interrupt (BEGIN)
+0000 C0E0              PUSH    ACC
+0002 C0D0              PUSH    PSW
+0004 75D000            MOV     PSW,#00H
+0007 C000              PUSH    AR0
+0009 C007              PUSH    AR7
+                                           ; SOURCE LINE # 8
+                                           ; SOURCE LINE # 9
+000B 309915            JNB     TI,?C0003
+                                           ; SOURCE LINE # 10
+000E C299              CLR     TI
+                                           ; SOURCE LINE # 11
+0010 E500        R     MOV     A,index
+0012 B40703            CJNE    A,#07H,?C0002
+                                           ; SOURCE LINE # 12
+0015 750000      R     MOV     index,#00H
+                                           ; SOURCE LINE # 13
+0018         ?C0002:
+                                           ; SOURCE LINE # 14
+0018 AF00        R     MOV     R7,index
+001A 0500        R     INC     index
+001C 7400        R     MOV     A,#LOW message
+001E 2F                ADD     A,R7
+001F F8                MOV     R0,A
+0020 E6                MOV     A,@R0
+0021 F599              MOV     SBUF,A
+                                           ; SOURCE LINE # 15
+                                           ; SOURCE LINE # 16
+0023         ?C0003:
+0023 D007              POP     AR7
+0025 D000              POP     AR0
+0027 D0D0              POP     PSW
+0029 D0E0              POP     ACC
+002B 32                RETI    
+             ; FUNCTION serial_interrupt (END)
+
+             ; FUNCTION main (BEGIN)
+                                           ; SOURCE LINE # 19
+                                           ; SOURCE LINE # 21
+0000 759850            MOV     SCON,#050H
+                                           ; SOURCE LINE # 22
+0003 438920            ORL     TMOD,#020H
+                                           ; SOURCE LINE # 23
+0006 758DFD            MOV     TH1,#0FDH
+                                           ; SOURCE LINE # 24
+0009 D28E              SETB    TR1
+                                           ; SOURCE LINE # 25
+000B D2AC              SETB    ES
+                                           ; SOURCE LINE # 26
+000D D2AF              SETB    EA
+                                           ; SOURCE LINE # 28
+000F AF00        R     MOV     R7,index
+0011 0500        R     INC     index
+0013 7400        R     MOV     A,#LOW message
+0015 2F                ADD     A,R7
+0016 F8                MOV     R0,A
+0017 E6                MOV     A,@R0
+0018 F599              MOV     SBUF,A
+001A         ?C0004:
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:09:30 PAGE 3   
+
+                                           ; SOURCE LINE # 29
+                                           ; SOURCE LINE # 31
+001A 80FE              SJMP    ?C0004
+             ; FUNCTION main (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     72    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      9    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,1450 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Users\ndars\Music\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND CODE PRINT(
+                    -.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          
+   2          
+   3          #include<stdio.h>
+   4          #include<reg51.h>
+   5          
+   6          // Function Prototypes
+   7          void delay();
+   8          void setLEDs(unsigned char val,int mode);
+   9          void running_led(int mode);
+  10          void binary_counter(int mode);
+  11          void alternate_led(int mode);
+  12          void blink_all(int mode);
+  13          void led_control(int key);
+  14          void display_digit(int digit);
+  15          void keypad_scan();
+  16          
+  17          // LED definitions
+  18          sbit LED1 = P1^0;
+  19          sbit LED2 = P1^1;
+  20          sbit LED3 = P1^2;
+  21          sbit LED4 = P1^3;
+  22          
+  23          // Seven Segment Display
+  24          sbit a  = P0^0;
+  25          sbit b  = P0^1;
+  26          sbit c  = P0^2;
+  27          sbit d  = P0^3;
+  28          sbit e  = P0^4;
+  29          sbit f  = P0^5;
+  30          sbit g  = P0^6;
+  31          
+  32          // Row pins (Output)
+  33          sbit ROW1 = P2^7;
+  34          sbit ROW2 = P2^6;
+  35          sbit ROW3 = P2^5;
+  36          sbit ROW4 = P2^4;
+  37          
+  38          // Column pins (Input)
+  39          sbit COL1 = P2^3;
+  40          sbit COL2 = P2^2;
+  41          sbit COL3 = P2^1;
+  42          
+  43          // Pattern variables
+  44          unsigned char mode = 0;
+  45          unsigned char run_index = 0;
+  46          unsigned char binary_count = 0;
+  47          unsigned char alt_index = 0;
+  48          bit blink_toggle = 0;
+  49          
+  50          // Delay Function
+  51          void delay()
+  52          {
+  53   1          unsigned int i,j;
+  54   1          for(i=0;i<100;i++)
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 2   
+
+  55   1              for(j=0;j<500;j++);
+  56   1      }
+  57          
+  58          void setLEDs(unsigned char val,int mode)
+  59          { 
+  60   1        display_digit(mode);
+  61   1          LED1 = val & 0x01;
+  62   1          LED2 = (val>>1) & 0x01;
+  63   1          LED3 = (val>>2) & 0x01;
+  64   1          LED4 = (val>>3) & 0x01;
+  65   1      }
+  66          
+  67          void running_led(int mode)
+  68          {
+  69   1        display_digit(mode);
+  70   1          setLEDs(1<<run_index,mode);
+  71   1          run_index=(run_index+1)%4;
+  72   1      }
+  73          
+  74          void binary_counter(int mode)
+  75          {
+  76   1        display_digit(mode);
+  77   1          setLEDs(binary_count,mode);
+  78   1          binary_count=(binary_count+1)%16;
+  79   1      }
+  80          
+  81          void alternate_led(int mode)
+  82          {
+  83   1          unsigned char pattern[2]={0x0A,0x05};
+  84   1      
+  85   1          setLEDs(pattern[alt_index],mode);
+  86   1      
+  87   1          alt_index=(alt_index+1)%2;
+  88   1      }
+  89          
+  90          void blink_all(int mode)
+  91          {
+  92   1          if(blink_toggle)
+  93   1              setLEDs(0x0F,mode);
+  94   1          else
+  95   1              setLEDs(0x00,mode);
+  96   1      
+  97   1          blink_toggle=!blink_toggle;
+  98   1      }
+  99          
+ 100          // LED Control Function
+ 101          void led_control(int key)
+ 102          {
+ 103   1          // Turn OFF all LEDs first
+ 104   1          LED1=0;
+ 105   1          LED2=0;
+ 106   1          LED3=0;
+ 107   1          LED4=0;
+ 108   1      
+ 109   1          switch(key)
+ 110   1          {
+ 111   2              case 1:
+ 112   2                  mode = 1;
+ 113   2                  display_digit(1);
+ 114   2                  break;
+ 115   2      
+ 116   2              case 2:
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 3   
+
+ 117   2                  mode = 2;
+ 118   2                  display_digit(2);
+ 119   2                  break;
+ 120   2      
+ 121   2              case 3:
+ 122   2                  mode = 3;
+ 123   2                  display_digit(3);
+ 124   2                  break;
+ 125   2      
+ 126   2              case 4:
+ 127   2                  mode = 4;
+ 128   2                  display_digit(4);
+ 129   2                  break;
+ 130   2      
+ 131   2              case 5:
+ 132   2                  mode = 5;
+ 133   2                  display_digit(5);
+ 134   2                  break;
+ 135   2      
+ 136   2              case 6:
+ 137   2                  mode = 6;
+ 138   2                  display_digit(6);
+ 139   2                  break;
+ 140   2      
+ 141   2              case 7:
+ 142   2                  mode = 7;
+ 143   2                  display_digit(7);
+ 144   2                  break;
+ 145   2      
+ 146   2              case 8:
+ 147   2                  mode = 8;
+ 148   2                  display_digit(8);
+ 149   2                  break;
+ 150   2      
+ 151   2              case 9:
+ 152   2                  mode = 9;
+ 153   2                  display_digit(9);
+ 154   2                  break;
+ 155   2      
+ 156   2              case 0:
+ 157   2                  mode = 0;
+ 158   2                  display_digit(0);
+ 159   2                  break;
+ 160   2          }
+ 161   1      }
+ 162          
+ 163          // Seven Segment Display Function
+ 164          void display_digit(int digit)
+ 165          {
+ 166   1          // Turn OFF all segments first
+ 167   1          a=0;
+ 168   1          b=0;
+ 169   1          c=0;
+ 170   1          d=0;
+ 171   1          e=0;
+ 172   1          f=0;
+ 173   1          g=0;
+ 174   1      
+ 175   1          switch(digit)
+ 176   1          {
+ 177   2              case 0:
+ 178   2                  a=1; b=1; c=1; d=1; e=1; f=1;
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 4   
+
+ 179   2                  break;
+ 180   2      
+ 181   2              case 1:
+ 182   2                  b=1; c=1;
+ 183   2                  break;
+ 184   2      
+ 185   2              case 2:
+ 186   2                  a=1; b=1; d=1; e=1; g=1;
+ 187   2                  break;
+ 188   2      
+ 189   2              case 3:
+ 190   2                  a=1; b=1; c=1; d=1; g=1;
+ 191   2                  break;
+ 192   2      
+ 193   2              case 4:
+ 194   2                  b=1; c=1; f=1; g=1;
+ 195   2                  break;
+ 196   2      
+ 197   2              case 5:
+ 198   2                  a=1; c=1; d=1; f=1; g=1;
+ 199   2                  break;
+ 200   2      
+ 201   2              case 6:
+ 202   2                  a=1; c=1; d=1; e=1; f=1; g=1;
+ 203   2                  break;
+ 204   2      
+ 205   2              case 7:
+ 206   2                  a=1; b=1; c=1;
+ 207   2                  break;
+ 208   2      
+ 209   2              case 8:
+ 210   2                  a=1; b=1; c=1; d=1; e=1; f=1; g=1;
+ 211   2                  break;
+ 212   2      
+ 213   2              case 9:
+ 214   2                  a=1; b=1; c=1; d=1; f=1; g=1;
+ 215   2                  break;
+ 216   2          }
+ 217   1      }
+ 218          
+ 219          // Keypad Scan Function
+ 220          void keypad_scan()
+ 221          {
+ 222   1          int i;
+ 223   1      
+ 224   1          // Initialize Seven Segment
+ 225   1          a=0;
+ 226   1          b=0;
+ 227   1          c=0;
+ 228   1          d=0;
+ 229   1          e=0;
+ 230   1          f=0;
+ 231   1          g=0;
+ 232   1          //dp=0;
+ 233   1      
+ 234   1          // Make all rows HIGH
+ 235   1          ROW1=1;
+ 236   1          ROW2=1;
+ 237   1          ROW3=1;
+ 238   1          ROW4=1;
+ 239   1      
+ 240   1          for(i=1;i<=4;i++)
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 5   
+
+ 241   1          {
+ 242   2              switch(i)
+ 243   2              {
+ 244   3              case 1:
+ 245   3              {
+ 246   4                  ROW1=0;
+ 247   4      
+ 248   4                  if(COL1==0)
+ 249   4                  {
+ 250   5                      delay();
+ 251   5                      if(COL1==0)
+ 252   5                      {
+ 253   6                          //b=1;
+ 254   6                          //c=1;
+ 255   6                          //LED1=1;
+ 256   6                          led_control(1);
+ 257   6                          
+ 258   6                          while(COL1==0);
+ 259   6                      }
+ 260   5                  }
+ 261   4      
+ 262   4                  if(COL2==0)
+ 263   4                  {
+ 264   5                      delay();
+ 265   5                      if(COL2==0)
+ 266   5                      {
+ 267   6                          led_control(2);
+ 268   6                          
+ 269   6                          while(COL2==0);
+ 270   6                      }
+ 271   5                  }
+ 272   4      
+ 273   4                  if(COL3==0)
+ 274   4                  {
+ 275   5                      delay();
+ 276   5                      if(COL3==0)
+ 277   5                      {
+ 278   6                          led_control(3);
+ 279   6                          
+ 280   6                          while(COL3==0);
+ 281   6                      }
+ 282   5                  }
+ 283   4      
+ 284   4                  ROW1=1;
+ 285   4                  break;
+ 286   4              }
+ 287   3      
+ 288   3              case 2:
+ 289   3              {
+ 290   4                  ROW2=0;
+ 291   4      
+ 292   4                  if(COL1==0)
+ 293   4                  {
+ 294   5                      delay();
+ 295   5                      if(COL1==0)
+ 296   5                      {
+ 297   6                          led_control(4);
+ 298   6                          
+ 299   6                          while(COL1==0);
+ 300   6                      }
+ 301   5                  }
+ 302   4      
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 6   
+
+ 303   4                  if(COL2==0)
+ 304   4                  {
+ 305   5                      delay();
+ 306   5                      if(COL2==0)
+ 307   5                      {
+ 308   6                          led_control(5);
+ 309   6                          
+ 310   6                          while(COL2==0);
+ 311   6                      }
+ 312   5                  }
+ 313   4      
+ 314   4                  if(COL3==0)
+ 315   4                  {
+ 316   5                      delay();
+ 317   5                      if(COL3==0)
+ 318   5                      {
+ 319   6                          led_control(6);
+ 320   6                          
+ 321   6                          while(COL3==0);
+ 322   6                      }
+ 323   5                  }
+ 324   4      
+ 325   4                  ROW2=1;
+ 326   4                  break;
+ 327   4              }
+ 328   3      
+ 329   3              case 3:
+ 330   3              {
+ 331   4                  ROW3=0;
+ 332   4      
+ 333   4                  if(COL1==0)
+ 334   4                  {
+ 335   5                      delay();
+ 336   5                      if(COL1==0)
+ 337   5                      {
+ 338   6                          led_control(7);
+ 339   6                          
+ 340   6                          while(COL1==0);
+ 341   6                      }
+ 342   5                  }
+ 343   4      
+ 344   4                  if(COL2==0)
+ 345   4                  {
+ 346   5                      delay();
+ 347   5                      if(COL2==0)
+ 348   5                      {
+ 349   6                          led_control(8);
+ 350   6                          
+ 351   6                          while(COL2==0);
+ 352   6                      }
+ 353   5                  }
+ 354   4      
+ 355   4                  if(COL3==0)
+ 356   4                  {
+ 357   5                      delay();
+ 358   5                      if(COL3==0)
+ 359   5                      {
+ 360   6                          led_control(9);
+ 361   6                          
+ 362   6                          while(COL3==0);
+ 363   6                      }
+ 364   5                  }
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 7   
+
+ 365   4      
+ 366   4                  ROW3=1;
+ 367   4                  break;
+ 368   4              }
+ 369   3      
+ 370   3              case 4:
+ 371   3              {
+ 372   4                  ROW4=0;
+ 373   4      
+ 374   4                  if(COL2==0)
+ 375   4                  {
+ 376   5                      delay();
+ 377   5                      if(COL2==0)
+ 378   5                      {
+ 379   6                          led_control(0);
+ 380   6                         
+ 381   6                          while(COL2==0);
+ 382   6                      }
+ 383   5                  }
+ 384   4      
+ 385   4                  ROW4=1;
+ 386   4                  break;
+ 387   4              }
+ 388   3      
+ 389   3              }
+ 390   2          }
+ 391   1      }
+ 392          
+ 393          // Main Function
+ 394          void main()
+ 395          {
+ 396   1          mode = 0;
+ 397   1      
+ 398   1          LED1=0;
+ 399   1          LED2=0;
+ 400   1          LED3=0;
+ 401   1          LED4=0;
+ 402   1      
+ 403   1          a=0;
+ 404   1          b=0;
+ 405   1          c=0;
+ 406   1          d=0;
+ 407   1          e=0;
+ 408   1          f=0;
+ 409   1          g=0;
+ 410   1          //dp=0;
+ 411   1      
+ 412   1          while(1)
+ 413   1          {
+ 414   2              keypad_scan();
+ 415   2      
+ 416   2              switch(mode)
+ 417   2              {
+ 418   3                  case 1:
+ 419   3                      setLEDs(0x01,mode);
+ 420   3                  
+ 421   3                      break;
+ 422   3      
+ 423   3                  case 2:
+ 424   3                      setLEDs(0x02,mode);
+ 425   3                      break;
+ 426   3      
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 8   
+
+ 427   3                  case 3:
+ 428   3                      setLEDs(0x04,mode);
+ 429   3                      break;
+ 430   3      
+ 431   3                  case 4:
+ 432   3                      setLEDs(0x08,mode);
+ 433   3                      break;
+ 434   3      
+ 435   3                  case 5:
+ 436   3                      running_led(mode);
+ 437   3                      break;
+ 438   3      
+ 439   3                  case 6:
+ 440   3                      alternate_led(mode);
+ 441   3                      break;
+ 442   3      
+ 443   3                  case 7:
+ 444   3                      binary_counter(mode);
+ 445   3                      break;
+ 446   3      
+ 447   3                  case 8:
+ 448   3                      blink_all(mode);
+ 449   3                      break;
+ 450   3      
+ 451   3                  case 9:
+ 452   3                      setLEDs(0x00,mode);
+ 453   3                      break;
+ 454   3      
+ 455   3                  case 0:
+ 456   3                      setLEDs(0x00,mode);
+ 457   3                      run_index = 0;
+ 458   3                      binary_count = 0;
+ 459   3                      alt_index = 0;
+ 460   3                      blink_toggle = 0;
+ 461   3                      break;
+ 462   3              }
+ 463   2      
+ 464   2              delay();
+ 465   2          }
+ 466   1      }
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 9   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION delay (BEGIN)
+                                           ; SOURCE LINE # 51
+                                           ; SOURCE LINE # 52
+                                           ; SOURCE LINE # 54
+;---- Variable 'i' assigned to Register 'R6/R7' ----
+0000 E4                CLR     A
+0001 FF                MOV     R7,A
+0002 FE                MOV     R6,A
+0003         ?C0001:
+                                           ; SOURCE LINE # 55
+;---- Variable 'j' assigned to Register 'R4/R5' ----
+0003 E4                CLR     A
+0004 FD                MOV     R5,A
+0005 FC                MOV     R4,A
+0006         ?C0004:
+0006 0D                INC     R5
+0007 BD0001            CJNE    R5,#00H,?C0102
+000A 0C                INC     R4
+000B         ?C0102:
+000B BC01F8            CJNE    R4,#01H,?C0004
+000E BDF4F5            CJNE    R5,#0F4H,?C0004
+0011         ?C0003:
+0011 0F                INC     R7
+0012 BF0001            CJNE    R7,#00H,?C0103
+0015 0E                INC     R6
+0016         ?C0103:
+0016 EF                MOV     A,R7
+0017 6464              XRL     A,#064H
+0019 4E                ORL     A,R6
+001A 70E7              JNZ     ?C0001
+                                           ; SOURCE LINE # 56
+001C         ?C0007:
+001C 22                RET     
+             ; FUNCTION delay (END)
+
+             ; FUNCTION _setLEDs (BEGIN)
+                                           ; SOURCE LINE # 58
+0000 8F00        R     MOV     val,R7
+;---- Variable 'mode' assigned to Register 'R4/R5' ----
+                                           ; SOURCE LINE # 59
+                                           ; SOURCE LINE # 60
+0002 AF05              MOV     R7,AR5
+0004 AE04              MOV     R6,AR4
+0006 120000      R     LCALL   _display_digit
+                                           ; SOURCE LINE # 61
+0009 E500        R     MOV     A,val
+000B 13                RRC     A
+000C 9290              MOV     LED1,C
+                                           ; SOURCE LINE # 62
+000E E500        R     MOV     A,val
+0010 C3                CLR     C
+0011 13                RRC     A
+0012 13                RRC     A
+0013 9291              MOV     LED2,C
+                                           ; SOURCE LINE # 63
+0015 E500        R     MOV     A,val
+0017 13                RRC     A
+0018 13                RRC     A
+0019 543F              ANL     A,#03FH
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 10  
+
+001B 13                RRC     A
+001C 9292              MOV     LED3,C
+                                           ; SOURCE LINE # 64
+001E E500        R     MOV     A,val
+0020 13                RRC     A
+0021 13                RRC     A
+0022 13                RRC     A
+0023 541F              ANL     A,#01FH
+0025 13                RRC     A
+0026 9293              MOV     LED4,C
+                                           ; SOURCE LINE # 65
+0028 22                RET     
+             ; FUNCTION _setLEDs (END)
+
+             ; FUNCTION _running_led (BEGIN)
+                                           ; SOURCE LINE # 67
+0000 8E00        R     MOV     mode,R6
+0002 8F00        R     MOV     mode+01H,R7
+                                           ; SOURCE LINE # 68
+                                           ; SOURCE LINE # 69
+0004 120000      R     LCALL   _display_digit
+                                           ; SOURCE LINE # 70
+0007 AF00        R     MOV     R7,run_index
+0009 A807              MOV     R0,AR7
+000B 7401              MOV     A,#01H
+000D 08                INC     R0
+000E 8002              SJMP    ?C0105
+0010         ?C0104:
+0010 C3                CLR     C
+0011 33                RLC     A
+0012         ?C0105:
+0012 D8FC              DJNZ    R0,?C0104
+0014 FF                MOV     R7,A
+0015 AD00        R     MOV     R5,mode+01H
+0017 AC00        R     MOV     R4,mode
+0019 120000      R     LCALL   _setLEDs
+                                           ; SOURCE LINE # 71
+001C E500        R     MOV     A,run_index
+001E 04                INC     A
+001F 5403              ANL     A,#03H
+0021 F500        R     MOV     run_index,A
+                                           ; SOURCE LINE # 72
+0023 22                RET     
+             ; FUNCTION _running_led (END)
+
+             ; FUNCTION _binary_counter (BEGIN)
+                                           ; SOURCE LINE # 74
+0000 8E00        R     MOV     mode,R6
+0002 8F00        R     MOV     mode+01H,R7
+                                           ; SOURCE LINE # 75
+                                           ; SOURCE LINE # 76
+0004 120000      R     LCALL   _display_digit
+                                           ; SOURCE LINE # 77
+0007 AD00        R     MOV     R5,mode+01H
+0009 AC00        R     MOV     R4,mode
+000B AF00        R     MOV     R7,binary_count
+000D 120000      R     LCALL   _setLEDs
+                                           ; SOURCE LINE # 78
+0010 E500        R     MOV     A,binary_count
+0012 04                INC     A
+0013 540F              ANL     A,#0FH
+0015 F500        R     MOV     binary_count,A
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 11  
+
+                                           ; SOURCE LINE # 79
+0017 22                RET     
+             ; FUNCTION _binary_counter (END)
+
+             ; FUNCTION _alternate_led (BEGIN)
+                                           ; SOURCE LINE # 81
+0000 8E00        R     MOV     mode,R6
+0002 8F00        R     MOV     mode+01H,R7
+                                           ; SOURCE LINE # 82
+                                           ; SOURCE LINE # 83
+0004 7800        R     MOV     R0,#LOW pattern
+0006 7C00        R     MOV     R4,#HIGH pattern
+0008 7D00              MOV     R5,#00H
+000A 7BFF              MOV     R3,#0FFH
+000C 7A00        R     MOV     R2,#HIGH _?ix1000
+000E 7900        R     MOV     R1,#LOW _?ix1000
+0010 7E00              MOV     R6,#00H
+0012 7F02              MOV     R7,#02H
+0014 120000      E     LCALL   ?C?COPY
+                                           ; SOURCE LINE # 85
+0017 7400        R     MOV     A,#LOW pattern
+0019 2500        R     ADD     A,alt_index
+001B F8                MOV     R0,A
+001C E6                MOV     A,@R0
+001D FF                MOV     R7,A
+001E AD00        R     MOV     R5,mode+01H
+0020 AC00        R     MOV     R4,mode
+0022 120000      R     LCALL   _setLEDs
+                                           ; SOURCE LINE # 87
+0025 E500        R     MOV     A,alt_index
+0027 04                INC     A
+0028 5401              ANL     A,#01H
+002A F500        R     MOV     alt_index,A
+                                           ; SOURCE LINE # 88
+002C 22                RET     
+             ; FUNCTION _alternate_led (END)
+
+             ; FUNCTION _blink_all (BEGIN)
+                                           ; SOURCE LINE # 90
+0000 8E00        R     MOV     mode,R6
+0002 8F00        R     MOV     mode+01H,R7
+                                           ; SOURCE LINE # 91
+                                           ; SOURCE LINE # 92
+0004 AD00        R     MOV     R5,mode+01H
+0006 AC00        R     MOV     R4,mode
+0008 300004      R     JNB     blink_toggle,?C0012
+                                           ; SOURCE LINE # 93
+000B 7F0F              MOV     R7,#0FH
+000D 8002              SJMP    ?C0113
+000F         ?C0012:
+                                           ; SOURCE LINE # 95
+000F E4                CLR     A
+0010 FF                MOV     R7,A
+0011         ?C0113:
+0011 120000      R     LCALL   _setLEDs
+0014         ?C0013:
+                                           ; SOURCE LINE # 97
+0014 B200        R     CPL     blink_toggle
+                                           ; SOURCE LINE # 98
+0016 22                RET     
+             ; FUNCTION _blink_all (END)
+
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 12  
+
+             ; FUNCTION _led_control (BEGIN)
+                                           ; SOURCE LINE # 101
+;---- Variable 'key' assigned to Register 'R6/R7' ----
+                                           ; SOURCE LINE # 102
+                                           ; SOURCE LINE # 104
+0000 C290              CLR     LED1
+                                           ; SOURCE LINE # 105
+0002 C291              CLR     LED2
+                                           ; SOURCE LINE # 106
+0004 C292              CLR     LED3
+                                           ; SOURCE LINE # 107
+0006 C293              CLR     LED4
+                                           ; SOURCE LINE # 109
+0008 EE                MOV     A,R6
+0009 7074              JNZ     ?C0026
+000B EF                MOV     A,R7
+000C B40A00            CJNE    A,#0AH,?C0106
+000F         ?C0106:
+000F 506E              JNC     ?C0026
+0011 900000      R     MOV     DPTR,#?C0107
+0014 F8                MOV     R0,A
+0015 28                ADD     A,R0
+0016 28                ADD     A,R0
+0017 73                JMP     @A+DPTR
+0018         ?C0107:
+0018 020000      R     LJMP    ?C0025
+001B 020000      R     LJMP    ?C0016
+001E 020000      R     LJMP    ?C0017
+0021 020000      R     LJMP    ?C0018
+0024 020000      R     LJMP    ?C0019
+0027 020000      R     LJMP    ?C0020
+002A 020000      R     LJMP    ?C0021
+002D 020000      R     LJMP    ?C0022
+0030 020000      R     LJMP    ?C0023
+0033 020000      R     LJMP    ?C0024
+                                           ; SOURCE LINE # 110
+                                           ; SOURCE LINE # 111
+0036         ?C0016:
+                                           ; SOURCE LINE # 112
+0036 750001      R     MOV     mode,#01H
+                                           ; SOURCE LINE # 113
+0039 7F01              MOV     R7,#01H
+                                           ; SOURCE LINE # 114
+003B 8036              SJMP    ?C0121
+                                           ; SOURCE LINE # 116
+003D         ?C0017:
+                                           ; SOURCE LINE # 117
+003D 750002      R     MOV     mode,#02H
+                                           ; SOURCE LINE # 118
+0040 7F02              MOV     R7,#02H
+0042         ?C0114:
+                                           ; SOURCE LINE # 119
+0042 802F              SJMP    ?C0121
+                                           ; SOURCE LINE # 121
+0044         ?C0018:
+                                           ; SOURCE LINE # 122
+0044 750003      R     MOV     mode,#03H
+                                           ; SOURCE LINE # 123
+0047 7F03              MOV     R7,#03H
+0049         ?C0115:
+                                           ; SOURCE LINE # 124
+0049 8028              SJMP    ?C0121
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 13  
+
+                                           ; SOURCE LINE # 126
+004B         ?C0019:
+                                           ; SOURCE LINE # 127
+004B 750004      R     MOV     mode,#04H
+                                           ; SOURCE LINE # 128
+004E 7F04              MOV     R7,#04H
+0050         ?C0116:
+                                           ; SOURCE LINE # 129
+0050 8021              SJMP    ?C0121
+                                           ; SOURCE LINE # 131
+0052         ?C0020:
+                                           ; SOURCE LINE # 132
+0052 750005      R     MOV     mode,#05H
+                                           ; SOURCE LINE # 133
+0055 7F05              MOV     R7,#05H
+0057         ?C0117:
+                                           ; SOURCE LINE # 134
+0057 801A              SJMP    ?C0121
+                                           ; SOURCE LINE # 136
+0059         ?C0021:
+                                           ; SOURCE LINE # 137
+0059 750006      R     MOV     mode,#06H
+                                           ; SOURCE LINE # 138
+005C 7F06              MOV     R7,#06H
+005E         ?C0118:
+                                           ; SOURCE LINE # 139
+005E 8013              SJMP    ?C0121
+                                           ; SOURCE LINE # 141
+0060         ?C0022:
+                                           ; SOURCE LINE # 142
+0060 750007      R     MOV     mode,#07H
+                                           ; SOURCE LINE # 143
+0063 7F07              MOV     R7,#07H
+0065         ?C0119:
+                                           ; SOURCE LINE # 144
+0065 800C              SJMP    ?C0121
+                                           ; SOURCE LINE # 146
+0067         ?C0023:
+                                           ; SOURCE LINE # 147
+0067 750008      R     MOV     mode,#08H
+                                           ; SOURCE LINE # 148
+006A 7F08              MOV     R7,#08H
+006C         ?C0120:
+                                           ; SOURCE LINE # 149
+006C 8005              SJMP    ?C0121
+                                           ; SOURCE LINE # 151
+006E         ?C0024:
+                                           ; SOURCE LINE # 152
+006E 750009      R     MOV     mode,#09H
+                                           ; SOURCE LINE # 153
+0071 7F09              MOV     R7,#09H
+0073         ?C0121:
+0073 7E00              MOV     R6,#00H
+                                           ; SOURCE LINE # 154
+0075 8005              SJMP    ?C0122
+                                           ; SOURCE LINE # 156
+0077         ?C0025:
+                                           ; SOURCE LINE # 157
+0077 E4                CLR     A
+0078 F500        R     MOV     mode,A
+                                           ; SOURCE LINE # 158
+007A FF                MOV     R7,A
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 14  
+
+007B FE                MOV     R6,A
+007C         ?C0122:
+007C 120000      R     LCALL   _display_digit
+                                           ; SOURCE LINE # 159
+                                           ; SOURCE LINE # 160
+                                           ; SOURCE LINE # 161
+007F         ?C0026:
+007F 22                RET     
+             ; FUNCTION _led_control (END)
+
+             ; FUNCTION _display_digit (BEGIN)
+                                           ; SOURCE LINE # 164
+;---- Variable 'digit' assigned to Register 'R6/R7' ----
+                                           ; SOURCE LINE # 165
+                                           ; SOURCE LINE # 167
+0000 C280              CLR     a
+                                           ; SOURCE LINE # 168
+0002 C281              CLR     b
+                                           ; SOURCE LINE # 169
+0004 C282              CLR     c
+                                           ; SOURCE LINE # 170
+0006 C283              CLR     d
+                                           ; SOURCE LINE # 171
+0008 C284              CLR     e
+                                           ; SOURCE LINE # 172
+000A C285              CLR     f
+                                           ; SOURCE LINE # 173
+000C C286              CLR     g
+                                           ; SOURCE LINE # 175
+000E EE                MOV     A,R6
+000F 6003              JZ      $ + 5H
+0011 020000      R     LJMP    ?C0038
+0014 EF                MOV     A,R7
+0015 B40A00            CJNE    A,#0AH,?C0108
+0018         ?C0108:
+0018 4003              JC      $ + 5H
+001A 020000      R     LJMP    ?C0038
+001D 900000      R     MOV     DPTR,#?C0109
+0020 F8                MOV     R0,A
+0021 28                ADD     A,R0
+0022 28                ADD     A,R0
+0023 73                JMP     @A+DPTR
+0024         ?C0109:
+0024 020000      R     LJMP    ?C0028
+0027 020000      R     LJMP    ?C0029
+002A 020000      R     LJMP    ?C0030
+002D 020000      R     LJMP    ?C0031
+0030 020000      R     LJMP    ?C0032
+0033 020000      R     LJMP    ?C0033
+0036 020000      R     LJMP    ?C0034
+0039 020000      R     LJMP    ?C0035
+003C 020000      R     LJMP    ?C0036
+003F 020000      R     LJMP    ?C0037
+                                           ; SOURCE LINE # 176
+                                           ; SOURCE LINE # 177
+0042         ?C0028:
+                                           ; SOURCE LINE # 178
+0042 D280              SETB    a
+0044 D281              SETB    b
+0046 D282              SETB    c
+0048 D283              SETB    d
+004A D284              SETB    e
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 15  
+
+004C D285              SETB    f
+                                           ; SOURCE LINE # 179
+004E 22                RET     
+                                           ; SOURCE LINE # 181
+004F         ?C0029:
+                                           ; SOURCE LINE # 182
+                                           ; SOURCE LINE # 183
+004F 8030              SJMP    ?C0123
+                                           ; SOURCE LINE # 185
+0051         ?C0030:
+                                           ; SOURCE LINE # 186
+0051 D280              SETB    a
+0053 D281              SETB    b
+0055 D283              SETB    d
+0057 D284              SETB    e
+0059 D286              SETB    g
+                                           ; SOURCE LINE # 187
+005B 22                RET     
+                                           ; SOURCE LINE # 189
+005C         ?C0031:
+                                           ; SOURCE LINE # 190
+005C D280              SETB    a
+005E D281              SETB    b
+0060 D282              SETB    c
+0062 D283              SETB    d
+0064 D286              SETB    g
+                                           ; SOURCE LINE # 191
+0066 22                RET     
+                                           ; SOURCE LINE # 193
+0067         ?C0032:
+                                           ; SOURCE LINE # 194
+0067 D281              SETB    b
+0069 D282              SETB    c
+                                           ; SOURCE LINE # 195
+006B 802D              SJMP    ?C0127
+                                           ; SOURCE LINE # 197
+006D         ?C0033:
+                                           ; SOURCE LINE # 198
+006D D280              SETB    a
+006F D282              SETB    c
+0071 D283              SETB    d
+0073         ?C0124:
+                                           ; SOURCE LINE # 199
+0073 8025              SJMP    ?C0127
+                                           ; SOURCE LINE # 201
+0075         ?C0034:
+                                           ; SOURCE LINE # 202
+0075 D280              SETB    a
+0077 D282              SETB    c
+0079 D283              SETB    d
+007B D284              SETB    e
+007D         ?C0125:
+                                           ; SOURCE LINE # 203
+007D 801B              SJMP    ?C0127
+                                           ; SOURCE LINE # 205
+007F         ?C0035:
+                                           ; SOURCE LINE # 206
+007F D280              SETB    a
+0081         ?C0123:
+0081 D281              SETB    b
+0083 D282              SETB    c
+                                           ; SOURCE LINE # 207
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 16  
+
+0085 22                RET     
+                                           ; SOURCE LINE # 209
+0086         ?C0036:
+                                           ; SOURCE LINE # 210
+0086 D280              SETB    a
+0088 D281              SETB    b
+008A D282              SETB    c
+008C D283              SETB    d
+008E D284              SETB    e
+0090         ?C0126:
+                                           ; SOURCE LINE # 211
+0090 8008              SJMP    ?C0127
+                                           ; SOURCE LINE # 213
+0092         ?C0037:
+                                           ; SOURCE LINE # 214
+0092 D280              SETB    a
+0094 D281              SETB    b
+0096 D282              SETB    c
+0098 D283              SETB    d
+009A         ?C0127:
+009A D285              SETB    f
+009C D286              SETB    g
+                                           ; SOURCE LINE # 215
+                                           ; SOURCE LINE # 216
+                                           ; SOURCE LINE # 217
+009E         ?C0038:
+009E 22                RET     
+             ; FUNCTION _display_digit (END)
+
+             ; FUNCTION keypad_scan (BEGIN)
+                                           ; SOURCE LINE # 220
+                                           ; SOURCE LINE # 221
+                                           ; SOURCE LINE # 225
+0000 C280              CLR     a
+                                           ; SOURCE LINE # 226
+0002 C281              CLR     b
+                                           ; SOURCE LINE # 227
+0004 C282              CLR     c
+                                           ; SOURCE LINE # 228
+0006 C283              CLR     d
+                                           ; SOURCE LINE # 229
+0008 C284              CLR     e
+                                           ; SOURCE LINE # 230
+000A C285              CLR     f
+                                           ; SOURCE LINE # 231
+000C C286              CLR     g
+                                           ; SOURCE LINE # 235
+000E D2A7              SETB    ROW1
+                                           ; SOURCE LINE # 236
+0010 D2A6              SETB    ROW2
+                                           ; SOURCE LINE # 237
+0012 D2A5              SETB    ROW3
+                                           ; SOURCE LINE # 238
+0014 D2A4              SETB    ROW4
+                                           ; SOURCE LINE # 240
+0016 750000      R     MOV     i,#00H
+0019 750001      R     MOV     i+01H,#01H
+001C         ?C0039:
+                                           ; SOURCE LINE # 241
+                                           ; SOURCE LINE # 242
+001C E500        R     MOV     A,i
+001E 6003              JZ      $ + 5H
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 17  
+
+0020 020000      R     LJMP    ?C0041
+0023 E500        R     MOV     A,i+01H
+0025 24FE              ADD     A,#0FEH
+0027 6053              JZ      ?C0056
+0029 14                DEC     A
+002A 7003              JNZ     $ + 5H
+002C 020000      R     LJMP    ?C0069
+002F 14                DEC     A
+0030 7003              JNZ     $ + 5H
+0032 020000      R     LJMP    ?C0082
+0035 2403              ADD     A,#03H
+0037 6003              JZ      $ + 5H
+0039 020000      R     LJMP    ?C0041
+                                           ; SOURCE LINE # 243
+                                           ; SOURCE LINE # 244
+003C         ?C0043:
+                                           ; SOURCE LINE # 245
+                                           ; SOURCE LINE # 246
+003C C2A7              CLR     ROW1
+                                           ; SOURCE LINE # 248
+003E 20A310            JB      COL1,?C0044
+                                           ; SOURCE LINE # 249
+                                           ; SOURCE LINE # 250
+0041 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 251
+0044 20A30A            JB      COL1,?C0044
+                                           ; SOURCE LINE # 252
+                                           ; SOURCE LINE # 256
+0047 7F01              MOV     R7,#01H
+0049 7E00              MOV     R6,#00H
+004B 120000      R     LCALL   _led_control
+004E         ?C0046:
+                                           ; SOURCE LINE # 258
+004E 30A3FD            JNB     COL1,?C0046
+                                           ; SOURCE LINE # 259
+                                           ; SOURCE LINE # 260
+0051         ?C0044:
+                                           ; SOURCE LINE # 262
+0051 20A210            JB      COL2,?C0048
+                                           ; SOURCE LINE # 263
+                                           ; SOURCE LINE # 264
+0054 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 265
+0057 20A20A            JB      COL2,?C0048
+                                           ; SOURCE LINE # 266
+                                           ; SOURCE LINE # 267
+005A 7F02              MOV     R7,#02H
+005C 7E00              MOV     R6,#00H
+005E 120000      R     LCALL   _led_control
+0061         ?C0050:
+                                           ; SOURCE LINE # 269
+0061 30A2FD            JNB     COL2,?C0050
+                                           ; SOURCE LINE # 270
+                                           ; SOURCE LINE # 271
+0064         ?C0048:
+                                           ; SOURCE LINE # 273
+0064 20A110            JB      COL3,?C0052
+                                           ; SOURCE LINE # 274
+                                           ; SOURCE LINE # 275
+0067 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 276
+006A 20A10A            JB      COL3,?C0052
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 18  
+
+                                           ; SOURCE LINE # 277
+                                           ; SOURCE LINE # 278
+006D 7F03              MOV     R7,#03H
+006F 7E00              MOV     R6,#00H
+0071 120000      R     LCALL   _led_control
+0074         ?C0054:
+                                           ; SOURCE LINE # 280
+0074 30A1FD            JNB     COL3,?C0054
+                                           ; SOURCE LINE # 281
+                                           ; SOURCE LINE # 282
+0077         ?C0052:
+                                           ; SOURCE LINE # 284
+0077 D2A7              SETB    ROW1
+                                           ; SOURCE LINE # 285
+0079 020000      R     LJMP    ?C0041
+                                           ; SOURCE LINE # 286
+                                           ; SOURCE LINE # 288
+007C         ?C0056:
+                                           ; SOURCE LINE # 289
+                                           ; SOURCE LINE # 290
+007C C2A6              CLR     ROW2
+                                           ; SOURCE LINE # 292
+007E 20A310            JB      COL1,?C0057
+                                           ; SOURCE LINE # 293
+                                           ; SOURCE LINE # 294
+0081 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 295
+0084 20A30A            JB      COL1,?C0057
+                                           ; SOURCE LINE # 296
+                                           ; SOURCE LINE # 297
+0087 7F04              MOV     R7,#04H
+0089 7E00              MOV     R6,#00H
+008B 120000      R     LCALL   _led_control
+008E         ?C0059:
+                                           ; SOURCE LINE # 299
+008E 30A3FD            JNB     COL1,?C0059
+                                           ; SOURCE LINE # 300
+                                           ; SOURCE LINE # 301
+0091         ?C0057:
+                                           ; SOURCE LINE # 303
+0091 20A210            JB      COL2,?C0061
+                                           ; SOURCE LINE # 304
+                                           ; SOURCE LINE # 305
+0094 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 306
+0097 20A20A            JB      COL2,?C0061
+                                           ; SOURCE LINE # 307
+                                           ; SOURCE LINE # 308
+009A 7F05              MOV     R7,#05H
+009C 7E00              MOV     R6,#00H
+009E 120000      R     LCALL   _led_control
+00A1         ?C0063:
+                                           ; SOURCE LINE # 310
+00A1 30A2FD            JNB     COL2,?C0063
+                                           ; SOURCE LINE # 311
+                                           ; SOURCE LINE # 312
+00A4         ?C0061:
+                                           ; SOURCE LINE # 314
+00A4 20A110            JB      COL3,?C0065
+                                           ; SOURCE LINE # 315
+                                           ; SOURCE LINE # 316
+00A7 120000      R     LCALL   delay
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 19  
+
+                                           ; SOURCE LINE # 317
+00AA 20A10A            JB      COL3,?C0065
+                                           ; SOURCE LINE # 318
+                                           ; SOURCE LINE # 319
+00AD 7F06              MOV     R7,#06H
+00AF 7E00              MOV     R6,#00H
+00B1 120000      R     LCALL   _led_control
+00B4         ?C0067:
+                                           ; SOURCE LINE # 321
+00B4 30A1FD            JNB     COL3,?C0067
+                                           ; SOURCE LINE # 322
+                                           ; SOURCE LINE # 323
+00B7         ?C0065:
+                                           ; SOURCE LINE # 325
+00B7 D2A6              SETB    ROW2
+                                           ; SOURCE LINE # 326
+00B9 8055              SJMP    ?C0041
+                                           ; SOURCE LINE # 327
+                                           ; SOURCE LINE # 329
+00BB         ?C0069:
+                                           ; SOURCE LINE # 330
+                                           ; SOURCE LINE # 331
+00BB C2A5              CLR     ROW3
+                                           ; SOURCE LINE # 333
+00BD 20A310            JB      COL1,?C0070
+                                           ; SOURCE LINE # 334
+                                           ; SOURCE LINE # 335
+00C0 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 336
+00C3 20A30A            JB      COL1,?C0070
+                                           ; SOURCE LINE # 337
+                                           ; SOURCE LINE # 338
+00C6 7F07              MOV     R7,#07H
+00C8 7E00              MOV     R6,#00H
+00CA 120000      R     LCALL   _led_control
+00CD         ?C0072:
+                                           ; SOURCE LINE # 340
+00CD 30A3FD            JNB     COL1,?C0072
+                                           ; SOURCE LINE # 341
+                                           ; SOURCE LINE # 342
+00D0         ?C0070:
+                                           ; SOURCE LINE # 344
+00D0 20A210            JB      COL2,?C0074
+                                           ; SOURCE LINE # 345
+                                           ; SOURCE LINE # 346
+00D3 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 347
+00D6 20A20A            JB      COL2,?C0074
+                                           ; SOURCE LINE # 348
+                                           ; SOURCE LINE # 349
+00D9 7F08              MOV     R7,#08H
+00DB 7E00              MOV     R6,#00H
+00DD 120000      R     LCALL   _led_control
+00E0         ?C0076:
+                                           ; SOURCE LINE # 351
+00E0 30A2FD            JNB     COL2,?C0076
+                                           ; SOURCE LINE # 352
+                                           ; SOURCE LINE # 353
+00E3         ?C0074:
+                                           ; SOURCE LINE # 355
+00E3 20A110            JB      COL3,?C0078
+                                           ; SOURCE LINE # 356
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 20  
+
+                                           ; SOURCE LINE # 357
+00E6 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 358
+00E9 20A10A            JB      COL3,?C0078
+                                           ; SOURCE LINE # 359
+                                           ; SOURCE LINE # 360
+00EC 7F09              MOV     R7,#09H
+00EE 7E00              MOV     R6,#00H
+00F0 120000      R     LCALL   _led_control
+00F3         ?C0080:
+                                           ; SOURCE LINE # 362
+00F3 30A1FD            JNB     COL3,?C0080
+                                           ; SOURCE LINE # 363
+                                           ; SOURCE LINE # 364
+00F6         ?C0078:
+                                           ; SOURCE LINE # 366
+00F6 D2A5              SETB    ROW3
+                                           ; SOURCE LINE # 367
+00F8 8016              SJMP    ?C0041
+                                           ; SOURCE LINE # 368
+                                           ; SOURCE LINE # 370
+00FA         ?C0082:
+                                           ; SOURCE LINE # 371
+                                           ; SOURCE LINE # 372
+00FA C2A4              CLR     ROW4
+                                           ; SOURCE LINE # 374
+00FC 20A20F            JB      COL2,?C0083
+                                           ; SOURCE LINE # 375
+                                           ; SOURCE LINE # 376
+00FF 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 377
+0102 20A209            JB      COL2,?C0083
+                                           ; SOURCE LINE # 378
+                                           ; SOURCE LINE # 379
+0105 E4                CLR     A
+0106 FF                MOV     R7,A
+0107 FE                MOV     R6,A
+0108 120000      R     LCALL   _led_control
+010B         ?C0085:
+                                           ; SOURCE LINE # 381
+010B 30A2FD            JNB     COL2,?C0085
+                                           ; SOURCE LINE # 382
+                                           ; SOURCE LINE # 383
+010E         ?C0083:
+                                           ; SOURCE LINE # 385
+010E D2A4              SETB    ROW4
+                                           ; SOURCE LINE # 386
+                                           ; SOURCE LINE # 387
+                                           ; SOURCE LINE # 389
+                                           ; SOURCE LINE # 390
+0110         ?C0041:
+0110 0500        R     INC     i+01H
+0112 E500        R     MOV     A,i+01H
+0114 7002              JNZ     ?C0110
+0116 0500        R     INC     i
+0118         ?C0110:
+0118 D3                SETB    C
+0119 9404              SUBB    A,#04H
+011B E500        R     MOV     A,i
+011D 6480              XRL     A,#080H
+011F 9480              SUBB    A,#080H
+0121 5003              JNC     $ + 5H
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 21  
+
+0123 020000      R     LJMP    ?C0039
+                                           ; SOURCE LINE # 391
+0126         ?C0087:
+0126 22                RET     
+             ; FUNCTION keypad_scan (END)
+
+             ; FUNCTION main (BEGIN)
+                                           ; SOURCE LINE # 394
+                                           ; SOURCE LINE # 395
+                                           ; SOURCE LINE # 396
+0000 E4                CLR     A
+0001 F500        R     MOV     mode,A
+                                           ; SOURCE LINE # 398
+0003 C290              CLR     LED1
+                                           ; SOURCE LINE # 399
+0005 C291              CLR     LED2
+                                           ; SOURCE LINE # 400
+0007 C292              CLR     LED3
+                                           ; SOURCE LINE # 401
+0009 C293              CLR     LED4
+                                           ; SOURCE LINE # 403
+000B C280              CLR     a
+                                           ; SOURCE LINE # 404
+000D C281              CLR     b
+                                           ; SOURCE LINE # 405
+000F C282              CLR     c
+                                           ; SOURCE LINE # 406
+0011 C283              CLR     d
+                                           ; SOURCE LINE # 407
+0013 C284              CLR     e
+                                           ; SOURCE LINE # 408
+0015 C285              CLR     f
+                                           ; SOURCE LINE # 409
+0017 C286              CLR     g
+0019         ?C0088:
+                                           ; SOURCE LINE # 412
+                                           ; SOURCE LINE # 413
+                                           ; SOURCE LINE # 414
+0019 120000      R     LCALL   keypad_scan
+                                           ; SOURCE LINE # 416
+001C E500        R     MOV     A,mode
+001E B40A00            CJNE    A,#0AH,?C0111
+0021         ?C0111:
+0021 4003              JC      $ + 5H
+0023 020000      R     LJMP    ?C0090
+0026 900000      R     MOV     DPTR,#?C0112
+0029 F8                MOV     R0,A
+002A 28                ADD     A,R0
+002B 28                ADD     A,R0
+002C 73                JMP     @A+DPTR
+002D         ?C0112:
+002D 020000      R     LJMP    ?C0100
+0030 020000      R     LJMP    ?C0091
+0033 020000      R     LJMP    ?C0092
+0036 020000      R     LJMP    ?C0093
+0039 020000      R     LJMP    ?C0094
+003C 020000      R     LJMP    ?C0095
+003F 020000      R     LJMP    ?C0096
+0042 020000      R     LJMP    ?C0097
+0045 020000      R     LJMP    ?C0098
+0048 020000      R     LJMP    ?C0099
+                                           ; SOURCE LINE # 417
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 22  
+
+                                           ; SOURCE LINE # 418
+004B         ?C0091:
+                                           ; SOURCE LINE # 419
+004B E500        R     MOV     A,mode
+004D FD                MOV     R5,A
+004E 7C00              MOV     R4,#00H
+0050 7F01              MOV     R7,#01H
+                                           ; SOURCE LINE # 421
+0052 8046              SJMP    ?C0131
+                                           ; SOURCE LINE # 423
+0054         ?C0092:
+                                           ; SOURCE LINE # 424
+0054 E500        R     MOV     A,mode
+0056 FD                MOV     R5,A
+0057 7C00              MOV     R4,#00H
+0059 7F02              MOV     R7,#02H
+005B         ?C0128:
+                                           ; SOURCE LINE # 425
+005B 803D              SJMP    ?C0131
+                                           ; SOURCE LINE # 427
+005D         ?C0093:
+                                           ; SOURCE LINE # 428
+005D E500        R     MOV     A,mode
+005F FD                MOV     R5,A
+0060 7C00              MOV     R4,#00H
+0062 7F04              MOV     R7,#04H
+0064         ?C0129:
+                                           ; SOURCE LINE # 429
+0064 8034              SJMP    ?C0131
+                                           ; SOURCE LINE # 431
+0066         ?C0094:
+                                           ; SOURCE LINE # 432
+0066 E500        R     MOV     A,mode
+0068 FD                MOV     R5,A
+0069 7C00              MOV     R4,#00H
+006B 7F08              MOV     R7,#08H
+006D         ?C0130:
+                                           ; SOURCE LINE # 433
+006D 802B              SJMP    ?C0131
+                                           ; SOURCE LINE # 435
+006F         ?C0095:
+                                           ; SOURCE LINE # 436
+006F AF00        R     MOV     R7,mode
+0071 7E00              MOV     R6,#00H
+0073 120000      R     LCALL   _running_led
+                                           ; SOURCE LINE # 437
+0076 803A              SJMP    ?C0090
+                                           ; SOURCE LINE # 439
+0078         ?C0096:
+                                           ; SOURCE LINE # 440
+0078 AF00        R     MOV     R7,mode
+007A 7E00              MOV     R6,#00H
+007C 120000      R     LCALL   _alternate_led
+                                           ; SOURCE LINE # 441
+007F 8031              SJMP    ?C0090
+                                           ; SOURCE LINE # 443
+0081         ?C0097:
+                                           ; SOURCE LINE # 444
+0081 AF00        R     MOV     R7,mode
+0083 7E00              MOV     R6,#00H
+0085 120000      R     LCALL   _binary_counter
+                                           ; SOURCE LINE # 445
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:08:41 PAGE 23  
+
+0088 8028              SJMP    ?C0090
+                                           ; SOURCE LINE # 447
+008A         ?C0098:
+                                           ; SOURCE LINE # 448
+008A AF00        R     MOV     R7,mode
+008C 7E00              MOV     R6,#00H
+008E 120000      R     LCALL   _blink_all
+                                           ; SOURCE LINE # 449
+0091 801F              SJMP    ?C0090
+                                           ; SOURCE LINE # 451
+0093         ?C0099:
+                                           ; SOURCE LINE # 452
+0093 E500        R     MOV     A,mode
+0095 FD                MOV     R5,A
+0096 7C00              MOV     R4,#00H
+0098 E4                CLR     A
+0099 FF                MOV     R7,A
+009A         ?C0131:
+009A 120000      R     LCALL   _setLEDs
+                                           ; SOURCE LINE # 453
+009D 8013              SJMP    ?C0090
+                                           ; SOURCE LINE # 455
+009F         ?C0100:
+                                           ; SOURCE LINE # 456
+009F E500        R     MOV     A,mode
+00A1 FD                MOV     R5,A
+00A2 7C00              MOV     R4,#00H
+00A4 E4                CLR     A
+00A5 FF                MOV     R7,A
+00A6 120000      R     LCALL   _setLEDs
+                                           ; SOURCE LINE # 457
+00A9 E4                CLR     A
+00AA F500        R     MOV     run_index,A
+                                           ; SOURCE LINE # 458
+00AC F500        R     MOV     binary_count,A
+                                           ; SOURCE LINE # 459
+00AE F500        R     MOV     alt_index,A
+                                           ; SOURCE LINE # 460
+00B0 C200        R     CLR     blink_toggle
+                                           ; SOURCE LINE # 461
+                                           ; SOURCE LINE # 462
+00B2         ?C0090:
+                                           ; SOURCE LINE # 464
+00B2 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 465
+00B5 020000      R     LJMP    ?C0088
+             ; FUNCTION main (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    964    ----
+   CONSTANT SIZE    =      2    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4      13
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

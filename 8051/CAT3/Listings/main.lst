@@ -1,0 +1,366 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:07:28 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Users\ndars\Music\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND CODE PRINT(
+                    -.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          /*The following program is made to design and implement a bare-metal Embedded C and direct memory-mapped r
+             -egister access, develop a four-state LED control system. 
+   2          Each valid button press advances the system to the next operating mode: running LED pattern, binary counte
+             -r, alternating pattern, and all-LED flashing */
+   3          
+   4          #include <reg51.h>
+   5          #include <stdio.h>
+   6          
+   7          //LED definitions
+   8          sbit LED1 = P1^0;
+   9          sbit LED2 = P1^2;
+  10          sbit LED3 = P1^3;
+  11          sbit LED4 = P1^4;
+  12          
+  13          //Button pins definitions
+  14          sbit ROW = P2^3;   // Output
+  15          sbit COL = P2^7;   // Input
+  16          
+  17          //defining a variable to track the mode 
+  18          unsigned char mode = 0;
+  19          
+  20          //Variables to track the state of each mode
+  21          unsigned char m1_index = 0;         //This tracks the current led position 0 1 2 3
+  22          unsigned char m2_count = 0;         //This tracks the binary number at which it is in 0-15
+  23          unsigned char m3_index = 0;         //This tracks which alternate it is in
+  24          bit m4_toggle = 0;                  //This tracks if it is on or off
+  25          
+  26          //Delay
+  27          void delay(){
+  28   1        unsigned int i, j;
+  29   1        for(i = 0; i < 100; i++)
+  30   1          for(j = 0; j < 500; j++);
+  31   1      }
+  32          
+  33          //assign the bits of the port to each LED
+  34          void setLEDs(unsigned char val){
+  35   1        LED1 = val & 0x01;
+  36   1        LED2 = (val >> 1) & 0x01;
+  37   1        LED3 = (val >> 2) & 0x01;
+  38   1        LED4 = (val >> 3) & 0x01;
+  39   1      }
+  40          
+  41          //Debouncing
+  42          void checkButton(){
+  43   1        ROW = 0;  
+  44   1        COL = 1;   
+  45   1        if (COL == 0){
+  46   2          delay();          
+  47   2          if (COL == 0){
+  48   3            while (COL == 0){}; //Waiting for release
+  49   3            mode++;
+  50   3            if (mode>3) mode = 0;
+  51   3          }
+  52   2        }
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:07:28 PAGE 2   
+
+  53   1      }
+  54          
+  55          //Mode 1 - running leds
+  56          void mode1(){
+  57   1        setLEDs(1 << m1_index);
+  58   1        m1_index = (m1_index + 1) % 4;
+  59   1      }
+  60          
+  61          //Mode 2 - binary counter
+  62          void mode2(){
+  63   1        setLEDs(m2_count);
+  64   1        m2_count = (m2_count + 1) % 16;
+  65   1      }
+  66          
+  67          //Mode 3 - alternating mode
+  68          void mode3(){
+  69   1        unsigned char pattern[2] = {0x0A, 0x05}; // 1010, 0101
+  70   1        setLEDs(pattern[m3_index]);
+  71   1        m3_index = (m3_index + 1) % 2;
+  72   1      }
+  73          
+  74          //Mode 4 - full flash
+  75          void mode4(){
+  76   1        if (m4_toggle)
+  77   1          setLEDs(0x0F);
+  78   1        else
+  79   1          setLEDs(0x00);
+  80   1      
+  81   1        m4_toggle = !m4_toggle;
+  82   1      }
+  83          
+  84          //Main 
+  85          void main(){
+  86   1        // initially setting everything as off
+  87   1        setLEDs(0x00);
+  88   1      
+  89   1        while(1){
+  90   2          checkButton();   // ALWAYS check first
+  91   2      
+  92   2          switch(mode){
+  93   3            case 0: mode1(); break;
+  94   3            case 1: mode2(); break;
+  95   3            case 2: mode3(); break;
+  96   3            case 3: mode4(); break;
+  97   3          }
+  98   2      
+  99   2          delay();   // Controls speed (non-blocking step delay)
+ 100   2        }
+ 101   1      }
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:07:28 PAGE 3   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION delay (BEGIN)
+                                           ; SOURCE LINE # 27
+                                           ; SOURCE LINE # 29
+;---- Variable 'i' assigned to Register 'R6/R7' ----
+0000 E4                CLR     A
+0001 FF                MOV     R7,A
+0002 FE                MOV     R6,A
+0003         ?C0001:
+                                           ; SOURCE LINE # 30
+;---- Variable 'j' assigned to Register 'R4/R5' ----
+0003 E4                CLR     A
+0004 FD                MOV     R5,A
+0005 FC                MOV     R4,A
+0006         ?C0004:
+0006 0D                INC     R5
+0007 BD0001            CJNE    R5,#00H,?C0029
+000A 0C                INC     R4
+000B         ?C0029:
+000B BC01F8            CJNE    R4,#01H,?C0004
+000E BDF4F5            CJNE    R5,#0F4H,?C0004
+0011         ?C0003:
+0011 0F                INC     R7
+0012 BF0001            CJNE    R7,#00H,?C0030
+0015 0E                INC     R6
+0016         ?C0030:
+0016 EF                MOV     A,R7
+0017 6464              XRL     A,#064H
+0019 4E                ORL     A,R6
+001A 70E7              JNZ     ?C0001
+                                           ; SOURCE LINE # 31
+001C         ?C0007:
+001C 22                RET     
+             ; FUNCTION delay (END)
+
+             ; FUNCTION _setLEDs (BEGIN)
+                                           ; SOURCE LINE # 34
+;---- Variable 'val' assigned to Register 'R7' ----
+                                           ; SOURCE LINE # 35
+0000 EF                MOV     A,R7
+0001 13                RRC     A
+0002 9290              MOV     LED1,C
+                                           ; SOURCE LINE # 36
+0004 EF                MOV     A,R7
+0005 C3                CLR     C
+0006 13                RRC     A
+0007 13                RRC     A
+0008 9292              MOV     LED2,C
+                                           ; SOURCE LINE # 37
+000A EF                MOV     A,R7
+000B 13                RRC     A
+000C 13                RRC     A
+000D 543F              ANL     A,#03FH
+000F 13                RRC     A
+0010 9293              MOV     LED3,C
+                                           ; SOURCE LINE # 38
+0012 EF                MOV     A,R7
+0013 13                RRC     A
+0014 13                RRC     A
+0015 13                RRC     A
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:07:28 PAGE 4   
+
+0016 541F              ANL     A,#01FH
+0018 13                RRC     A
+0019 9294              MOV     LED4,C
+                                           ; SOURCE LINE # 39
+001B 22                RET     
+             ; FUNCTION _setLEDs (END)
+
+             ; FUNCTION checkButton (BEGIN)
+                                           ; SOURCE LINE # 42
+                                           ; SOURCE LINE # 43
+0000 C2A3              CLR     ROW
+                                           ; SOURCE LINE # 44
+0002 D2A7              SETB    COL
+                                           ; SOURCE LINE # 45
+0004 20A715            JB      COL,?C0014
+                                           ; SOURCE LINE # 46
+0007 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 47
+000A 20A70F            JB      COL,?C0014
+000D         ?C0011:
+                                           ; SOURCE LINE # 48
+000D 30A7FD            JNB     COL,?C0011
+                                           ; SOURCE LINE # 49
+0010 0500        R     INC     mode
+                                           ; SOURCE LINE # 50
+0012 E500        R     MOV     A,mode
+0014 D3                SETB    C
+0015 9403              SUBB    A,#03H
+0017 4003              JC      ?C0014
+0019 E4                CLR     A
+001A F500        R     MOV     mode,A
+                                           ; SOURCE LINE # 51
+                                           ; SOURCE LINE # 52
+                                           ; SOURCE LINE # 53
+001C         ?C0014:
+001C 22                RET     
+             ; FUNCTION checkButton (END)
+
+             ; FUNCTION mode1 (BEGIN)
+                                           ; SOURCE LINE # 56
+                                           ; SOURCE LINE # 57
+0000 AF00        R     MOV     R7,m1_index
+0002 A807              MOV     R0,AR7
+0004 7401              MOV     A,#01H
+0006 08                INC     R0
+0007 8002              SJMP    ?C0032
+0009         ?C0031:
+0009 C3                CLR     C
+000A 33                RLC     A
+000B         ?C0032:
+000B D8FC              DJNZ    R0,?C0031
+000D FF                MOV     R7,A
+000E 120000      R     LCALL   _setLEDs
+                                           ; SOURCE LINE # 58
+0011 E500        R     MOV     A,m1_index
+0013 04                INC     A
+0014 5403              ANL     A,#03H
+0016 F500        R     MOV     m1_index,A
+                                           ; SOURCE LINE # 59
+0018 22                RET     
+             ; FUNCTION mode1 (END)
+
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:07:28 PAGE 5   
+
+             ; FUNCTION mode2 (BEGIN)
+                                           ; SOURCE LINE # 62
+                                           ; SOURCE LINE # 63
+0000 AF00        R     MOV     R7,m2_count
+0002 120000      R     LCALL   _setLEDs
+                                           ; SOURCE LINE # 64
+0005 E500        R     MOV     A,m2_count
+0007 04                INC     A
+0008 540F              ANL     A,#0FH
+000A F500        R     MOV     m2_count,A
+                                           ; SOURCE LINE # 65
+000C 22                RET     
+             ; FUNCTION mode2 (END)
+
+             ; FUNCTION mode3 (BEGIN)
+                                           ; SOURCE LINE # 68
+                                           ; SOURCE LINE # 69
+0000 7800        R     MOV     R0,#LOW pattern
+0002 7C00        R     MOV     R4,#HIGH pattern
+0004 7D00              MOV     R5,#00H
+0006 7BFF              MOV     R3,#0FFH
+0008 7A00        R     MOV     R2,#HIGH _?ix1000
+000A 7900        R     MOV     R1,#LOW _?ix1000
+000C 7E00              MOV     R6,#00H
+000E 7F02              MOV     R7,#02H
+0010 120000      E     LCALL   ?C?COPY
+                                           ; SOURCE LINE # 70
+0013 7400        R     MOV     A,#LOW pattern
+0015 2500        R     ADD     A,m3_index
+0017 F8                MOV     R0,A
+0018 E6                MOV     A,@R0
+0019 FF                MOV     R7,A
+001A 120000      R     LCALL   _setLEDs
+                                           ; SOURCE LINE # 71
+001D E500        R     MOV     A,m3_index
+001F 04                INC     A
+0020 5401              ANL     A,#01H
+0022 F500        R     MOV     m3_index,A
+                                           ; SOURCE LINE # 72
+0024 22                RET     
+             ; FUNCTION mode3 (END)
+
+             ; FUNCTION mode4 (BEGIN)
+                                           ; SOURCE LINE # 75
+                                           ; SOURCE LINE # 76
+0000 300004      R     JNB     m4_toggle,?C0018
+                                           ; SOURCE LINE # 77
+0003 7F0F              MOV     R7,#0FH
+0005 8002              SJMP    ?C0033
+0007         ?C0018:
+                                           ; SOURCE LINE # 79
+0007 E4                CLR     A
+0008 FF                MOV     R7,A
+0009         ?C0033:
+0009 120000      R     LCALL   _setLEDs
+000C         ?C0019:
+                                           ; SOURCE LINE # 81
+000C B200        R     CPL     m4_toggle
+                                           ; SOURCE LINE # 82
+000E 22                RET     
+             ; FUNCTION mode4 (END)
+
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:07:28 PAGE 6   
+
+             ; FUNCTION main (BEGIN)
+                                           ; SOURCE LINE # 85
+                                           ; SOURCE LINE # 87
+0000 E4                CLR     A
+0001 FF                MOV     R7,A
+0002 120000      R     LCALL   _setLEDs
+0005         ?C0021:
+                                           ; SOURCE LINE # 89
+                                           ; SOURCE LINE # 90
+0005 120000      R     LCALL   checkButton
+                                           ; SOURCE LINE # 92
+0008 E500        R     MOV     A,mode
+000A 14                DEC     A
+000B 600F              JZ      ?C0025
+000D 14                DEC     A
+000E 6011              JZ      ?C0026
+0010 14                DEC     A
+0011 6013              JZ      ?C0027
+0013 2403              ADD     A,#03H
+0015 7012              JNZ     ?C0023
+                                           ; SOURCE LINE # 93
+0017         ?C0024:
+0017 120000      R     LCALL   mode1
+001A 800D              SJMP    ?C0023
+                                           ; SOURCE LINE # 94
+001C         ?C0025:
+001C 120000      R     LCALL   mode2
+001F 8008              SJMP    ?C0023
+                                           ; SOURCE LINE # 95
+0021         ?C0026:
+0021 120000      R     LCALL   mode3
+0024 8003              SJMP    ?C0023
+                                           ; SOURCE LINE # 96
+0026         ?C0027:
+0026 120000      R     LCALL   mode4
+                                           ; SOURCE LINE # 97
+0029         ?C0023:
+                                           ; SOURCE LINE # 99
+0029 120000      R     LCALL   delay
+                                           ; SOURCE LINE # 100
+002C 80D7              SJMP    ?C0021
+             ; FUNCTION main (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    222    ----
+   CONSTANT SIZE    =      2    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      4       2
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

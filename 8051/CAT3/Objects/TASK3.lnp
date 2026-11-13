@@ -1,0 +1,4 @@
+".\Objects\STARTUP.obj",
+".\Objects\main.obj" 
+TO ".\Objects\TASK3" 
+PRINT(".\Listings\TASK3.m51") RAMSIZE(256) 

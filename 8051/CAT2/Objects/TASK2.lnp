@@ -1,0 +1,4 @@
+".\Objects\STARTUP.obj",
+".\Objects\DirectAccessLEDControl.obj" 
+TO ".\Objects\TASK2" 
+PRINT(".\Listings\TASK2.m51") RAMSIZE(256) 

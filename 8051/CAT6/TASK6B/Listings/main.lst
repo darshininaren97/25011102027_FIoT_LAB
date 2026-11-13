@@ -1,0 +1,114 @@
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:10:41 PAGE 1   
+
+
+C51 COMPILER V9.60.7.0, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN .\Objects\main.obj
+COMPILER INVOKED BY: C:\Users\ndars\Music\C51\BIN\C51.EXE main.c OPTIMIZE(8,SPEED) BROWSE DEBUG OBJECTEXTEND CODE PRINT(
+                    -.\Listings\main.lst) TABS(2) OBJECT(.\Objects\main.obj)
+
+line level    source
+
+   1          
+   2          
+   3          #include <reg51.h> 
+   4          
+   5          unsigned char c;
+   6          void serial_interrupt(void) interrupt 4 {
+   7   1          if(RI) {
+   8   2              RI = 0; // Clear receive interrupt flag
+   9   2              c = SBUF; // Read received character
+  10   2              SBUF = c; // Echo back the received character
+  11   2          }
+  12   1      
+  13   1          if(TI) {
+  14   2              TI = 0; // Clear transmit interrupt flag
+  15   2          }
+  16   1      }
+  17          
+  18          void init() {
+  19   1          SCON = 0x50; // Set serial mode to 8-bit UART, enable reception
+  20   1          TMOD |= 0x20; // Set Timer1 in mode 2 (8-bit auto-reload)
+  21   1          TH1 = 0xFD; // Set baud rate to 9600
+  22   1          TR1 = 1; // Start Timer1
+  23   1          ES = 1; // Enable serial interrupt
+  24   1          EA = 1; // Enable global interrupts
+  25   1      }
+  26          
+  27          void main() {
+  28   1          init();
+  29   1      
+  30   1          while(1) {
+  31   2              // Main loop can perform other tasks or enter low power mode
+  32   2          }
+  33   1      }
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:10:41 PAGE 2   
+
+ASSEMBLY LISTING OF GENERATED OBJECT CODE
+
+
+             ; FUNCTION serial_interrupt (BEGIN)
+                                           ; SOURCE LINE # 6
+                                           ; SOURCE LINE # 7
+0000 309808            JNB     RI,?C0001
+                                           ; SOURCE LINE # 8
+0003 C298              CLR     RI
+                                           ; SOURCE LINE # 9
+0005 859900      R     MOV     c,SBUF
+                                           ; SOURCE LINE # 10
+0008 850099      R     MOV     SBUF,c
+                                           ; SOURCE LINE # 11
+000B         ?C0001:
+                                           ; SOURCE LINE # 13
+000B 309902            JNB     TI,?C0003
+                                           ; SOURCE LINE # 14
+000E C299              CLR     TI
+                                           ; SOURCE LINE # 15
+                                           ; SOURCE LINE # 16
+0010         ?C0003:
+0010 32                RETI    
+             ; FUNCTION serial_interrupt (END)
+
+             ; FUNCTION init (BEGIN)
+                                           ; SOURCE LINE # 18
+                                           ; SOURCE LINE # 19
+0000 759850            MOV     SCON,#050H
+                                           ; SOURCE LINE # 20
+0003 438920            ORL     TMOD,#020H
+                                           ; SOURCE LINE # 21
+0006 758DFD            MOV     TH1,#0FDH
+                                           ; SOURCE LINE # 22
+0009 D28E              SETB    TR1
+                                           ; SOURCE LINE # 23
+000B D2AC              SETB    ES
+                                           ; SOURCE LINE # 24
+000D D2AF              SETB    EA
+                                           ; SOURCE LINE # 25
+000F 22                RET     
+             ; FUNCTION init (END)
+
+             ; FUNCTION main (BEGIN)
+                                           ; SOURCE LINE # 27
+                                           ; SOURCE LINE # 28
+0000 120000      R     LCALL   init
+0003         ?C0005:
+                                           ; SOURCE LINE # 30
+                                           ; SOURCE LINE # 32
+0003 80FE              SJMP    ?C0005
+             ; FUNCTION main (END)
+
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     38    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      1    ----
+   IDATA SIZE       =   ----    ----
+C51 COMPILER V9.60.7.0   MAIN                                                              11/14/2026 00:10:41 PAGE 3   
+
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
