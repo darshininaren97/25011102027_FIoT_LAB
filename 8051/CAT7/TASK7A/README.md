@@ -39,6 +39,3 @@ The program first displays an individual character and subsequently displays tex
 - First row: `HELLO WORLD`
 - Second row: `8051 LCD`
 
-## Result
-
-Successfully interfaced a 16×2 LCD with the AT89S52 microcontroller in 4-bit mode and displayed individual characters and strings on both rows.
