@@ -7,9 +7,9 @@
 void delay();
 void setLEDs(unsigned char val,int mode);
 void running_led(int mode);
-void binary_counter();
-void alternate_led();
-void blink_all();
+void binary_counter(int mode);
+void alternate_led(int mode);
+void blink_all(int mode);
 void led_control(int key);
 void display_digit(int digit);
 void keypad_scan();
