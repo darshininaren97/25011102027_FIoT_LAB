@@ -65,3 +65,6 @@ USART2 is connected to the serial debugging interface.
 - HTTP request detection, response construction and connection handling are implemented on the STM32.
 - The implementation uses blocking UART communication through the STM32 HAL library.
 - The browser and ESP8266 must be connected to the same local network.
+  
+## Circuit Diagram
+![Diagram](diagram.jpeg)
