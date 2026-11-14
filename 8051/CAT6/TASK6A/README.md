@@ -59,7 +59,8 @@ hello
 ```
 
 Each transmission includes carriage return (`\r`) and newline (`\n`) characters.
-
+## Circuit Diagram
+![Diagram](6a.png)
 ## Result
 Interrupt-driven serial data transmission was implemented successfully using the 8051 microcontroller. The predefined message is transmitted continuously through the UART using the serial transmit interrupt, allowing the main program to remain available for other operations.
 
