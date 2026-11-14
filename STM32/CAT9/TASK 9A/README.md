@@ -1,95 +1,78 @@
-# Task 9A – UART Data Transmission and Reception using STM32
+# STM32 UART Echo – USART2
 
-## Aim
-To establish UART serial communication using the STM32 microcontroller, receive a single byte of data through USART2, and transmit the received byte back to the sender.
+A basic UART communication implementation using the STM32 HAL library. The program continuously receives a byte through USART2 and transmits the same byte back to the sender, implementing a simple serial echo mechanism.
 
-## Hardware Requirements
-- STM32 development board
-- USB-to-UART converter or serial communication interface
-- Computer with a serial terminal (such as PuTTY)
+## Features
 
-## UART Configuration
+- UART communication using USART2.
+- Single-byte data reception.
+- Immediate echo of received data.
+- Continuous receive-and-transmit operation.
+- Blocking UART communication using STM32 HAL APIs.
 
-| Parameter | Configuration |
+## Configuration
+
+| Parameter | Value |
 |---|---|
 | Peripheral | USART2 |
 | Baud Rate | 115200 |
-| Word Length | 8 bits |
+| Word Length | 8 Bits |
 | Stop Bits | 1 |
 | Parity | None |
-| Mode | Transmitter and Receiver |
+| Mode | Transmit & Receive |
 | Hardware Flow Control | None |
 | Oversampling | 16 |
 
-## Working Principle
+## How It Works
 
-The program implements a UART echo operation.
+The application continuously executes a receive-and-echo cycle:
 
-1. The STM32 waits for one byte of data to arrive through USART2.
-2. `HAL_UART_Receive()` receives the byte and stores it in the variable `cmd`.
-3. `HAL_UART_Transmit()` sends the same byte back through USART2.
-4. The process repeats continuously inside the infinite loop.
+1. Waits for incoming data through USART2.
+2. Receives one byte and stores it in `cmd`.
+3. Transmits the received byte back through USART2.
+4. Repeats the process indefinitely.
 
-This allows any character received by the STM32 to be echoed back to the serial terminal.
+The implementation uses two STM32 HAL functions:
 
-## UART Functions Used
-
-### `HAL_UART_Receive()`
-
+**Data Reception**
 ```c
 HAL_UART_Receive(&huart2, &cmd, 1, HAL_MAX_DELAY);
 ```
 
-- Receives data through USART2.
-- Stores the received byte in `cmd`.
-- Receives one byte at a time.
-- `HAL_MAX_DELAY` makes the function wait until data is received.
-
-### `HAL_UART_Transmit()`
-
+**Data Transmission**
 ```c
 HAL_UART_Transmit(&huart2, &cmd, 1, HAL_MAX_DELAY);
 ```
 
-- Transmits the received byte through USART2.
-- Sends one byte at a time.
-- Uses blocking transmission until the operation is complete.
-
-## Program Flow
-
-1. Initialize the HAL library.
-2. Configure the system clock.
-3. Initialize GPIO and USART2.
-4. Wait for a byte to be received through UART.
-5. Store the received byte in `cmd`.
-6. Transmit the same byte back to the sender.
-7. Repeat the receive-and-transmit process continuously.
+Both operations are blocking, meaning execution waits for the respective UART operation to complete.
 
 ## Clock Configuration
 
-The system clock is configured using the external high-speed oscillator (HSE) and PLL.
+The system clock uses an external High-Speed Oscillator (HSE) with PLL.
 
-- Oscillator source: HSE
-- PLL source: HSE
-- PLL multiplication factor: ×9
-- AHB prescaler: 1
-- APB1 prescaler: 2
-- APB2 prescaler: 1
+| Parameter | Configuration |
+|---|---|
+| Oscillator Source | HSE |
+| PLL Source | HSE |
+| PLL Multiplier | ×9 |
+| AHB Prescaler | 1 |
+| APB1 Prescaler | 2 |
+| APB2 Prescaler | 1 |
 
-## Software Requirements
+## Requirements
+
+- STM32 development board
 - STM32CubeIDE
 - STM32 HAL Library
-- PuTTY or another serial terminal application
+- USB-to-UART interface (if required by the board setup)
+- Serial terminal application such as PuTTY
 
-## Key Concepts Demonstrated
-- UART serial communication
-- USART2 peripheral configuration
-- UART data reception and transmission
-- Byte-by-byte communication
-- Blocking UART communication
-- STM32 HAL UART functions
-- Serial terminal interfacing
+## Circuit Diagram
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/42eb53ef-684c-417b-884b-b092e946f92c" />
 
-## Observation
 
-The STM32 successfully receives a character through USART2 and transmits the same character back to the sender. This demonstrates basic two-way UART communication using a receive-and-echo mechanism.
+## Testing
+
+The firmware can be tested using a serial terminal configured with the same UART settings (115200 baud, 8-N-1).
+
+Sending characters through the terminal should result in the STM32 transmitting the same characters back.
