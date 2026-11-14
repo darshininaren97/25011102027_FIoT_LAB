@@ -55,4 +55,4 @@ OK
 The ESP8266 should return `OK` if the AT command is successfully received and processed.
 
 ## Circuit Diagram
-<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/62b2cde7-442d-4569-941f-61761ed2a2c3" />
+![Diagram](10a.png)
