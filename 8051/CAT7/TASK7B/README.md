@@ -46,6 +46,8 @@ The integer is converted into ASCII digits using repeated division and modulus o
 
 A special condition handles the value zero separately.
 
+## Circuit Diagram
+![Diagram](7.png)
 ## Output
 
 For the integer value `1234`:
