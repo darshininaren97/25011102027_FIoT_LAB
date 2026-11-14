@@ -67,4 +67,4 @@ USART2 is connected to the serial debugging interface.
 - The browser and ESP8266 must be connected to the same local network.
   
 ## Circuit Diagram
-![Diagram](diagram.jpeg)
+![Diagram](diagram.png)
