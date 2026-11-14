@@ -52,6 +52,8 @@ The system clock is configured using the internal High-Speed Internal (HSI) osci
 
 The LED starts in the OFF state. Inside the infinite loop, the output state of PA5 is inverted using `HAL_GPIO_TogglePin()`. A 500 ms delay follows each toggle, producing a continuous blinking pattern with a 1-second complete ON-OFF cycle.
 
+## Circuit Diagram
+![Diagram](diagram.png)
 ## Key Functions
 
 | Function | Purpose |
