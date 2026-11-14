@@ -52,6 +52,9 @@ This program uses the STM32F401RE GPIO input to detect short and long button pre
 - `HAL_GetTick()` – Retrieves the system tick count for measuring press duration.
 - `HAL_Delay()` – Implements debounce intervals and blink timing.
 
+## Circuit Diagram 
+![Diagram](diagram.png)
+
 ## Software & Hardware
 
 - STM32CubeIDE
