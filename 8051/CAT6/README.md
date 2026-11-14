@@ -103,4 +103,4 @@ Two interrupt-driven serial communication implementations were developed using t
 These are two separate implementations of UART interrupt handling and are not intended to execute simultaneously as a single program. The first focuses on transmit interrupt handling, while the second demonstrates receive interrupt handling along with transmit completion management.
 
 ## Circuit Diagram
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/2b46bceb-4108-47ad-a136-27d89a4fc517" />
+![Diagram](6a.png)
