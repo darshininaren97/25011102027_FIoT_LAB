@@ -244,7 +244,7 @@ A software delay is introduced after each execution cycle to control the speed o
 The seven-segment display indicates the currently selected operating mode.
 
 ## Circuit Diagram
-<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/4f9aa5db-69d3-436b-94b0-3ca48cc71e2c" />
+![Diagram](cat4.png)
 
 ## 14. Limitations and Considerations
 
