@@ -252,6 +252,7 @@ A **hysteresis mechanism** is built into the level transitions, so the displayed
 ##  Gallery
 
 <div align="center">
+    
 ![Diagram](p2.png)
 ![Diagram](p3.png)
 ![Diagram](p4.png)
