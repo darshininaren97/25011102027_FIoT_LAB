@@ -80,6 +80,9 @@ When a direction button is pressed:
 
 The second row initially displays the text `HELLO`.
 
+## Circuit Diagram
+![Diagram](7.png)
+
 ## Output
 
 - Displays the character `A` on the LCD.
