@@ -56,7 +56,7 @@ A simple **software delay loop** is used instead of hardware timers to create a 
 
 ---
 ## Circuit Diagram
-<img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/dde72273-48bf-4edf-ac43-d4b6560544f1" />
+![Diagram](image.png)
 
 
 ## Program Logic  
