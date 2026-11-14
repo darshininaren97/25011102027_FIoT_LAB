@@ -83,7 +83,7 @@ Connect the BME280 module to the STM32 I2C1 interface:
 | SDA | PB9 (I2C1_SDA, if configured in CubeMX) |
 
 ## Circuit Diagram
-![Diagram](diagram.png)
+![Diagram](diagram.jpeg)
 
 ## Software & Tools
 
