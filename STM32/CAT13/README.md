@@ -82,6 +82,9 @@ Connect the BME280 module to the STM32 I2C1 interface:
 | SCL | PB8 (I2C1_SCL, if configured in CubeMX) |
 | SDA | PB9 (I2C1_SDA, if configured in CubeMX) |
 
+## Circuit Diagram
+![Diagram](diagram.png)
+
 ## Software & Tools
 
 - STM32CubeIDE
