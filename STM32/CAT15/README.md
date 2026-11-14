@@ -11,7 +11,7 @@
 ![Node-RED](https://img.shields.io/badge/Node--RED-Dashboard-8F0000?logo=nodered&logoColor=white)
 ![Weather](https://img.shields.io/badge/Data-OpenWeatherMap-EB6E4B)
 
-<img width="1600" height="761" alt="Moisture Advisory dashboard" src="https://github.com/user-attachments/assets/a63c8e7a-54af-4465-8b73-2c8736f89fcd" />
+![Diagram](p1.png)
 
 </div>
 
@@ -252,17 +252,11 @@ A **hysteresis mechanism** is built into the level transitions, so the displayed
 ##  Gallery
 
 <div align="center">
-
-<img width="847" height="507" alt="Dashboard screenshot" src="https://github.com/user-attachments/assets/257a7442-29bf-486b-8f9e-02b787770b1b" />
-
-<img width="1600" height="761" alt="Dashboard view" src="https://github.com/user-attachments/assets/7d75d4e7-2e1c-4d40-abcc-b1e5dce32a66" />
-
-<img width="1507" height="522" alt="Dashboard screenshot" src="https://github.com/user-attachments/assets/1086ad1f-5e2b-4c25-802a-2ff7bd1a3da5" />
-
-<img width="1437" height="647" alt="Dashboard screenshot" src="https://github.com/user-attachments/assets/2ea7974b-748a-4378-bcc0-0e71a79109ee" />
-
-<img width="1255" height="486" alt="Dashboard screenshot" src="https://github.com/user-attachments/assets/51f805cf-ec19-4a34-82c5-471500be48d3" />
-
-<img width="1508" height="698" alt="Dashboard screenshot" src="https://github.com/user-attachments/assets/f0324fa9-2501-463e-8551-934d3a3f6fb4" />
+![Diagram](p2.png)
+![Diagram](p3.png)
+![Diagram](p4.png)
+![Diagram](p5.png)
+![Diagram](p6.png)
+![Diagram](p7.png)
 
 </div>
