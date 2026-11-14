@@ -44,6 +44,9 @@ The program then waits for the button to be released before accepting another pr
 
 Each valid button press produces exactly one LED state change.
 
+## Circuit Diagram
+![Diagram](diagram.png)
+
 ## Key HAL Functions
 
 | Function | Purpose |
