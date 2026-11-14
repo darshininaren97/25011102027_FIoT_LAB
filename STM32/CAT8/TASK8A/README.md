@@ -64,7 +64,7 @@ The system clock uses an external High-Speed Oscillator (HSE) with PLL.
 - STM32 HAL Library
   
 ## Circuit Diagram
-<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/67e5cf04-7104-40b2-8fd4-6187530eb0e2" />
+![Diagram](8a.png)
 
 ## Behaviour
 
