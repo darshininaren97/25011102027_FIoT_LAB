@@ -88,8 +88,7 @@ The system clock uses an external High-Speed Oscillator (HSE) with PLL.
 - STM32 HAL Library
 
 ## Circuit Diagram
-<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/6565a1da-bdab-4583-a3e2-46ff1efacf5f" />
-
+![Diagram](8a.png)
 ## Behaviour
 
 Each valid button press toggles the LED exactly once. The 30 ms stability check filters out rapid transitions caused by mechanical switch bouncing, while the non-blocking implementation allows the main loop to continue executing during the debounce interval.
