@@ -1,4 +1,4 @@
-# Task 8D – UART Data Transmission and Reception using STM32
+# Task 9A – UART Data Transmission and Reception using STM32
 
 ## Aim
 To establish UART serial communication using the STM32 microcontroller, receive a single byte of data through USART2, and transmit the received byte back to the sender.
