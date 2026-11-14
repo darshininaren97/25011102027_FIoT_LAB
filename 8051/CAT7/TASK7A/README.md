@@ -34,6 +34,8 @@ The program implements the following functions:
 
 The program first displays an individual character and subsequently displays text on both rows.
 
+## Circuit Diagram
+![Diagram](7.png)
 ## Output
 
 - First row: `HELLO WORLD`
