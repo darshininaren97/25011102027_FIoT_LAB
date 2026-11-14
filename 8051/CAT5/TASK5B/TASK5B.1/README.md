@@ -95,3 +95,6 @@ This produces a gradual increase and decrease in LED brightness.
 The LED connected to P1.0 gradually increases in brightness and then decreases in brightness. This fading cycle repeats continuously.
 
 The main function remains free of delay loops because PWM generation and brightness updates are handled inside the Timer 0 interrupt service routine.
+
+## Circuit diagram
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/20863c01-68a3-4595-8b06-99c52ee7f2cb" />
