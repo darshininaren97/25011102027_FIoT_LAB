@@ -28,3 +28,4 @@ The main program remains in an infinite loop while the timer interrupt independe
   
 ## Circuit Diagram
 
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/83500025-8210-4add-a2ab-b46347480ddb" />
