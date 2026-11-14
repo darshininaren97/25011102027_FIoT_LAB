@@ -253,9 +253,9 @@ A **hysteresis mechanism** is built into the level transitions, so the displayed
 
 <div align="center">
 
-<img width="1600" height="761" alt="Dashboard view" src="https://github.com/user-attachments/assets/7d75d4e7-2e1c-4d40-abcc-b1e5dce32a66" />
-
 <img width="847" height="507" alt="Dashboard screenshot" src="https://github.com/user-attachments/assets/257a7442-29bf-486b-8f9e-02b787770b1b" />
+
+<img width="1600" height="761" alt="Dashboard view" src="https://github.com/user-attachments/assets/7d75d4e7-2e1c-4d40-abcc-b1e5dce32a66" />
 
 <img width="1507" height="522" alt="Dashboard screenshot" src="https://github.com/user-attachments/assets/1086ad1f-5e2b-4c25-802a-2ff7bd1a3da5" />
 
