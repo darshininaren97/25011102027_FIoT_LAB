@@ -1,98 +1,119 @@
-# Task 8C – Short Press and Long Press Detection (STM32)
+# STM32 GPIO – Short Press and Long Press Detection
 
-## Aim
-To interface a switch with an STM32 microcontroller and distinguish between short and long button presses to control an LED using different operations.
+A button-controlled LED application using the STM32 HAL library. The firmware distinguishes between short and long button presses based on their duration, using software debouncing and non-blocking time tracking.
 
-## Hardware Requirements
-- STM32 development board
-- LED connected to GPIO pin PC13
-- Switch connected to GPIO pin PA3
+Different press types trigger different LED behaviours, implemented through a state-based control mechanism.
 
-## GPIO Configuration
+## Features
+
+- Short-press and long-press detection.
+- Software switch debouncing.
+- Press-duration measurement using `HAL_GetTick()`.
+- LED toggle control.
+- Continuous LED blinking mode.
+- Non-blocking timing without `HAL_Delay()`.
+- State-based button and LED control.
+
+## Hardware Configuration
 
 | Pin | Configuration | Function |
 |---|---|---|
-| PA3 | Input with pull-up | Reads switch state |
-| PC13 | Output push-pull | Controls LED |
+| PA3 | Input with Pull-up | Reads switch state |
+| PC13 | Output Push-Pull | Controls LED |
 
-## Working Principle
+## Button Operations
 
-The program detects whether the switch is pressed briefly or held for a longer duration. It uses software debouncing to avoid false detections caused by mechanical switch bouncing.
+The application supports two types of button interactions:
 
-A switch state is accepted only after remaining stable for **30 milliseconds**.
+| Input | Duration | Behaviour |
+|---|---|---|
+| Short Press | Less than 1000 ms | Toggles LED state |
+| Long Press | 1000 ms or longer | Activates blinking mode |
 
-Two types of button presses are handled:
+**Short press:**
+- Toggles the LED once when the button is released.
+- If blinking mode is already active, stops blinking and turns the LED OFF.
 
-### 1. Short Press
-- A press lasting less than 1000 milliseconds is treated as a short press.
-- The LED toggles its current state once when the button is released.
-- If blinking mode was active, a short press stops blinking and turns the LED OFF.
-
-### 2. Long Press
-- A press lasting 1000 milliseconds or longer is treated as a long press.
-- When the button is released after a long press, blinking mode is activated.
-- The LED continuously toggles at an interval of 300 milliseconds.
+**Long press:**
+- Activates continuous LED blinking when the button is released.
+- The LED toggles at 300 ms intervals.
 
 ## Timing Configuration
 
-| Constant | Value | Purpose |
+| Parameter | Value | Purpose |
 |---|---:|---|
-| `DEBOUNCE_MS` | 30 ms | Required switch stability period |
-| `LONG_PRESS_MS` | 1000 ms | Threshold for detecting a long press |
+| `DEBOUNCE_MS` | 30 ms | Input stability interval |
+| `LONG_PRESS_MS` | 1000 ms | Long-press detection threshold |
 | `BLINK_MS` | 300 ms | LED blinking interval |
 
-## Variables Used
+## How It Works
+
+### 1. Switch Debouncing
+
+The firmware continuously reads PA3 and detects changes in its raw input state.
+
+A new switch state is accepted only after remaining unchanged for 30 ms. This filters unwanted transitions caused by mechanical switch bouncing.
+
+### 2. Press Duration Measurement
+
+When a valid button press is detected, `HAL_GetTick()` records the starting timestamp in `pressStart`.
+
+When the button is released, the elapsed duration is calculated and compared against the long-press threshold.
+
+### 3. LED Control
+
+The LED behaviour depends on the detected press type:
+
+- **Short press:** Toggles the current LED state.
+- **Long press:** Enables blinking mode.
+- **Short press during blinking:** Disables blinking and turns the LED OFF.
+
+### 4. Non-Blocking Blinking
+
+Blinking is implemented using elapsed-time checks rather than blocking delays.
+
+`HAL_GetTick()` tracks the time since the previous LED toggle. Once 300 ms has elapsed, the LED state is updated using `HAL_GPIO_TogglePin()`.
+
+This allows the firmware to continue monitoring button input while blinking is active.
+
+## State Variables
 
 | Variable | Purpose |
 |---|---|
-| `lastRaw` | Stores the previous raw switch reading |
-| `stableState` | Stores the debounced switch state |
+| `lastRaw` | Previous raw switch reading |
+| `stableState` | Last accepted debounced state |
 | `blinking` | Indicates whether blinking mode is active |
-| `lastChangeTick` | Stores the time of the last raw switch-state change |
-| `pressStart` | Records the time at which a valid press begins |
-| `lastBlink` | Records the time of the last LED toggle during blinking |
-
-## Program Flow
-
-1. Initialize the HAL library, system clock and GPIO peripherals.
-2. Set PC13 HIGH to keep the active-low LED OFF initially.
-3. Continuously read the switch connected to PA3.
-4. Detect raw switch-state changes and restart the 30 ms debounce timer.
-5. Accept a new switch state only after it remains stable for the debounce interval.
-6. When a valid press is detected, record its starting time using `HAL_GetTick()`.
-7. When the switch is released, calculate the press duration.
-8. If the duration is less than 1000 ms, execute the short-press operation.
-9. If the duration is 1000 ms or longer, activate blinking mode.
-10. While blinking mode is active, toggle the LED every 300 ms.
+| `lastChangeTick` | Timestamp of the most recent raw input change |
+| `pressStart` | Starting timestamp of a valid button press |
+| `lastBlink` | Timestamp of the previous LED toggle |
 
 ## Clock Configuration
 
-The system clock is configured using the external high-speed oscillator (HSE) and PLL.
+The system clock uses an external High-Speed Oscillator (HSE) with PLL.
 
-- Oscillator source: HSE
-- PLL source: HSE
-- PLL multiplication factor: ×9
-- AHB prescaler: 1
-- APB1 prescaler: 2
-- APB2 prescaler: 1
+| Parameter | Configuration |
+|---|---|
+| Oscillator Source | HSE |
+| PLL Source | HSE |
+| PLL Multiplier | ×9 |
+| AHB Prescaler | 1 |
+| APB1 Prescaler | 2 |
+| APB2 Prescaler | 1 |
 
-## Software Requirements
+## Requirements
+
+- STM32 development board
+- Push-button switch connected to PA3
+- LED connected to PC13
 - STM32CubeIDE
 - STM32 HAL Library
-- STM32 development board
 
-## Key Concepts Demonstrated
-- GPIO input and output configuration
-- Short-press and long-press detection
-- Software switch debouncing
-- Time measurement using `HAL_GetTick()`
-- Non-blocking LED blinking
-- State-based control using variables
-- LED toggling using `HAL_GPIO_TogglePin()`
-- Active-low LED operation
+## Circuit Diagram
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/4de50365-9b53-4c26-b605-009ac6a3c3d0" />
 
-## Observation
 
-The program distinguishes short and long button presses using their measured durations. A short press toggles the LED, while a long press activates LED blinking at 300 ms intervals. A subsequent short press stops blinking and turns the LED OFF.
+## Behaviour
 
-The implementation uses non-blocking time checks instead of software delay loops, allowing switch monitoring and LED blinking to operate continuously.
+The application uses button press duration to select between two operating modes. Short presses toggle the LED, while long presses activate continuous blinking. A subsequent short press exits blinking mode and turns the LED OFF.
+
+All timing operations are handled through system tick comparisons, allowing button detection and LED control to run concurrently without blocking delays.
