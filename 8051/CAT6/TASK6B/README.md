@@ -1,6 +1,6 @@
 # Serial Data Reception and Echo Using Interrupt – 8051 Microcontroller
 
-## Aim
+## Objective
 To implement interrupt-driven serial data reception using the 8051 microcontroller and transmit the received character back to the sender using UART communication.
 
 ## Hardware Requirements
@@ -52,7 +52,8 @@ The Transmit Interrupt Flag (`TI`) is also checked and cleared to ensure proper 
 - Transmit Interrupt Flag (`TI`)
 - Serial Interrupt Service Routine (ISR)
 - Character echo operation
-
+## Circuit Diagram
+![Diagram](6a.png)
 ## Expected Output
 When a character or string is entered through a serial terminal, the 8051 microcontroller transmits the same character or string back to the terminal.
 
