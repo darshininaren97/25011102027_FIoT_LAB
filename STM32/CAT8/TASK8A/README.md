@@ -1,66 +1,72 @@
-# Task 8A – LED Follows Switch (STM32)
+# STM32 GPIO – Switch-Controlled LED
 
-## Aim
-To interface a switch with an STM32 microcontroller and control an LED based on the switch input using the STM32 HAL library.
+A basic GPIO interfacing application using the STM32 HAL library. The firmware reads the state of a push-button switch connected to PA3 and controls an LED connected to PC13 accordingly.
 
-## Hardware Requirements
-- STM32 development board
-- LED connected to GPIO pin PC13
-- Switch connected to GPIO pin PA3
+The implementation uses continuous GPIO polling to monitor the switch and update the LED state in real time.
 
-## GPIO Configuration
+## Features
+
+- Digital input reading through GPIO.
+- LED control based on switch state.
+- Internal GPIO pull-up configuration.
+- Active-low LED operation.
+- Continuous input polling without software delay loops.
+
+## Hardware Configuration
 
 | Pin | Configuration | Function |
 |---|---|---|
-| PA3 | Input with pull-up | Reads switch state |
-| PC13 | Output push-pull | Controls LED |
+| PA3 | Input with Pull-up | Reads switch state |
+| PC13 | Output Push-Pull | Controls LED |
 
 ## Working Principle
 
-The program continuously reads the state of the switch connected to PA3.
+The application continuously monitors PA3 using `HAL_GPIO_ReadPin()`.
 
-- **Switch pressed:** PA3 reads LOW (`GPIO_PIN_RESET`), so the LED is turned ON.
-- **Switch released:** PA3 reads HIGH (`GPIO_PIN_SET`), so the LED is turned OFF.
+- **Switch Pressed:** PA3 reads LOW (`GPIO_PIN_RESET`), turning the LED ON.
+- **Switch Released:** PA3 reads HIGH (`GPIO_PIN_SET`), turning the LED OFF.
 
-The LED connected to PC13 is active-low. Therefore:
-- Writing `GPIO_PIN_RESET` turns the LED ON.
-- Writing `GPIO_PIN_SET` turns the LED OFF.
+PC13 is connected to an active-low LED, so its output logic is inverted:
 
-The LED is initialized to the OFF state before entering the infinite loop.
+| GPIO Output | LED State |
+|---|---|
+| `GPIO_PIN_RESET` | ON |
+| `GPIO_PIN_SET` | OFF |
 
-## Program Flow
+## How It Works
 
-1. Initialize the HAL library.
-2. Configure the system clock.
-3. Initialize GPIO pins.
-4. Set PC13 HIGH to keep the LED OFF initially.
-5. Continuously read the switch state at PA3.
-6. Turn the LED ON when the switch is pressed and OFF when it is released.
+1. Initializes the STM32 HAL library and system clock.
+2. Configures PA3 as an input with an internal pull-up.
+3. Configures PC13 as a push-pull output.
+4. Initializes the LED to the OFF state.
+5. Continuously reads the switch input.
+6. Updates the LED output according to the switch state.
 
 ## Clock Configuration
 
-The system clock is configured using the external high-speed oscillator (HSE) and PLL.
+The system clock uses an external High-Speed Oscillator (HSE) with PLL.
 
-- Oscillator source: HSE
-- PLL source: HSE
-- PLL multiplication factor: ×9
-- AHB prescaler: 1
-- APB1 prescaler: 2
-- APB2 prescaler: 1
+| Parameter | Configuration |
+|---|---|
+| Oscillator Source | HSE |
+| PLL Source | HSE |
+| PLL Multiplier | ×9 |
+| AHB Prescaler | 1 |
+| APB1 Prescaler | 2 |
+| APB2 Prescaler | 1 |
 
-## Software Requirements
+## Requirements
+
+- STM32 development board
+- LED connected to PC13
+- Push-button switch connected to PA3
 - STM32CubeIDE
 - STM32 HAL Library
-- STM32 development board
+  
+## Circuit Diagram
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/67e5cf04-7104-40b2-8fd4-6187530eb0e2" />
 
-## Key Concepts Demonstrated
-- GPIO input and output configuration
-- Reading digital input using `HAL_GPIO_ReadPin()`
-- Controlling an LED using `HAL_GPIO_WritePin()`
-- Internal GPIO pull-up configuration
-- Active-low LED operation
-- Continuous polling using an infinite loop
+## Behaviour
 
-## Observation
+The LED directly follows the switch state: pressing the switch turns the LED ON, and releasing it turns the LED OFF.
 
-The LED follows the state of the switch: it remains ON while the switch is pressed and turns OFF when the switch is released.
