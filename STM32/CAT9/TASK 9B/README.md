@@ -1,129 +1,125 @@
-# Task 9B – UART-Based LED Control using Serial Commands (STM32)
+# STM32 UART-Based LED Control
 
-## Aim
-To control an LED connected to an STM32 microcontroller using commands received through UART serial communication.
+A command-driven LED control application using USART2 and the STM32 HAL library. The firmware receives text commands from a serial terminal, interprets them, and controls an LED connected to GPIO pin PC13.
 
-## Hardware Requirements
-- STM32 development board
-- LED connected to GPIO pin PC13
-- Computer with a serial terminal application (such as PuTTY)
+The application supports direct LED control, continuous blinking, and command validation through UART communication.
 
-## GPIO Configuration
+## Features
 
-| Pin | Configuration | Function |
-|---|---|---|
-| PC13 | Output push-pull | Controls the LED |
-
-## UART Configuration
-
-| Parameter | Configuration |
-|---|---|
-| Peripheral | USART2 |
-| Baud Rate | 115200 |
-| Word Length | 8 bits |
-| Stop Bits | 1 |
-| Parity | None |
-| Mode | Transmitter and Receiver |
-| Hardware Flow Control | None |
-| Oversampling | 16 |
-
-## Working Principle
-
-The program receives commands from a serial terminal through USART2 and performs the corresponding LED operation.
-
-Each incoming character is:
-1. Received using `HAL_UART_Receive()`.
-2. Echoed back to the serial terminal using `HAL_UART_Transmit()`.
-3. Stored in a character buffer until a carriage return (`\r`) or newline (`\n`) is received.
-
-Once a complete command is received, the program compares it with the supported commands using `strcmp()`.
+- UART-based command input through USART2.
+- Character-by-character command reception.
+- Command buffering and string comparison.
+- LED ON and OFF control.
+- Continuous LED toggling with a 300 ms interval.
+- UART character echo and command status messages.
+- Invalid command detection.
+- Non-blocking UART reception during LED toggling to detect exit input.
 
 ## Supported Commands
 
-| Command | Operation |
+| Command | Function |
 |---|---|
 | `LED ON` | Turns the LED ON |
 | `LED OFF` | Turns the LED OFF |
 | `LED TOGGLE` | Continuously toggles the LED |
-| Any other command | Displays `INVALID` |
+| Any unsupported command | Returns `INVALID` |
 
-### 1. LED ON
-When `LED ON` is received, the program writes `GPIO_PIN_RESET` to PC13, turning the active-low LED ON. It then sends the confirmation message:
+## Hardware Configuration
 
-`LED IS TURNED ON`
+| Component | Configuration |
+|---|---|
+| Microcontroller | STM32 |
+| LED GPIO | PC13 |
+| GPIO Mode | Output Push-Pull |
+| UART Peripheral | USART2 |
 
-### 2. LED OFF
-When `LED OFF` is received, the program writes `GPIO_PIN_SET` to PC13, turning the LED OFF. It then sends:
+**Note:** PC13 is configured for an active-low LED. Writing `GPIO_PIN_RESET` turns it ON, while `GPIO_PIN_SET` turns it OFF.
 
-`LED IS TURNED OFF`
+## UART Configuration
 
-### 3. LED TOGGLE
-When `LED TOGGLE` is received, the program enters a continuous toggling loop.
+| Parameter | Value |
+|---|---|
+| Peripheral | USART2 |
+| Baud Rate | 115200 |
+| Word Length | 8 Bits |
+| Stop Bits | 1 |
+| Parity | None |
+| Mode | Transmit & Receive |
+| Hardware Flow Control | None |
+| Oversampling | 16 |
 
-- The LED changes state every 300 milliseconds using `HAL_GPIO_TogglePin()`.
-- `HAL_Delay(300)` provides the blinking interval.
-- The program checks for incoming UART data with a non-blocking receive timeout of zero.
-- When a character is received, the toggling loop is exited.
+## How It Works
 
-The confirmation message is:
+The firmware continuously receives characters from USART2 and builds a command string in a character buffer.
 
-`LED IS TOGGLING`
+1. Each received character is echoed back to the serial terminal.
+2. Characters are stored in `c[20]`.
+3. A carriage return (`\r`) or newline (`\n`) indicates the end of a command.
+4. The completed string is compared against supported commands using `strcmp()`.
+5. The corresponding GPIO operation is performed, and a response is transmitted over UART.
 
-### 4. Invalid Command
-If the received command does not match any supported command, the program transmits:
+### Command Execution
 
-`INVALID`
+**`LED ON`**
 
-## Buffer Handling
+Sets PC13 to `GPIO_PIN_RESET`, activating the LED, and sends a confirmation message.
 
-The character buffer `c[20]` stores the incoming command.
+**`LED OFF`**
 
-- Characters are stored one at a time.
-- A maximum of 19 characters is accepted, leaving space for the null terminator.
-- When a carriage return or newline is received, the buffer is null-terminated.
-- `strcmp()` compares the completed command with the supported command strings.
+Sets PC13 to `GPIO_PIN_SET`, deactivating the LED, and sends a confirmation message.
+
+**`LED TOGGLE`**
+
+Enters a continuous blinking loop using:
+
+```c
+HAL_GPIO_TogglePin();
+HAL_Delay(300);
+```
+
+The firmware periodically checks USART2 for incoming data using a zero-timeout (non-blocking) receive operation. Receiving a character exits the toggling loop.
+
+**Invalid Commands**
+
+Commands that do not match the supported strings return `INVALID`.
+
+## Command Buffer Handling
+
+The application uses a 20-byte character buffer to assemble incoming commands.
+
+- Characters are received individually.
+- A maximum of 19 characters is stored, reserving one byte for the null terminator.
+- The buffer is null-terminated when a command-ending character is received.
+- `strcmp()` is used for command identification.
 - The buffer index is reset after command processing.
-
-## Program Flow
-
-1. Initialize the HAL library.
-2. Configure the system clock.
-3. Initialize GPIO and USART2.
-4. Receive characters from the serial terminal.
-5. Echo each received character back.
-6. Store characters in the command buffer.
-7. Detect the end of a command using carriage return or newline.
-8. Compare the command with the supported LED commands.
-9. Perform the corresponding LED operation and transmit a status message.
-10. Continue waiting for the next command.
 
 ## Clock Configuration
 
-The system clock is configured using the external high-speed oscillator (HSE) and PLL.
+The system clock uses an external High-Speed Oscillator (HSE) with PLL.
 
-- Oscillator source: HSE
-- PLL source: HSE
-- PLL multiplication factor: ×9
-- AHB prescaler: 1
-- APB1 prescaler: 2
-- APB2 prescaler: 1
+| Parameter | Configuration |
+|---|---|
+| Oscillator Source | HSE |
+| PLL Source | HSE |
+| PLL Multiplier | ×9 |
+| AHB Prescaler | 1 |
+| APB1 Prescaler | 2 |
+| APB2 Prescaler | 1 |
 
-## Software Requirements
+## Requirements
+
+- STM32 development board
+- LED connected to PC13
 - STM32CubeIDE
 - STM32 HAL Library
-- PuTTY or another serial terminal application
+- Serial terminal application (PuTTY or equivalent)
+- 
+## Circuit Diagram
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/6a3ddf41-05e6-4da6-b4f0-63a6cafc0b6e" />
 
-## Key Concepts Demonstrated
-- UART serial communication
-- Command-based control
-- Character buffering
-- String comparison using `strcmp()`
-- String transmission using `HAL_UART_Transmit()`
-- UART reception using `HAL_UART_Receive()`
-- Blocking and non-blocking UART reception
-- GPIO output control
-- LED toggling and delay-based blinking
+## Testing
 
-## Observation
+Connect to USART2 using a serial terminal configured for **115200 baud, 8-N-1**.
 
-The STM32 receives commands through USART2 and controls the LED according to the command entered in the serial terminal. It also provides confirmation messages for valid commands and an invalid-command message for unsupported inputs.
+Enter the supported commands followed by Enter and observe the LED response and UART feedback.
+
