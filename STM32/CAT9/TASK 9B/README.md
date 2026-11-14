@@ -115,7 +115,7 @@ The system clock uses an external High-Speed Oscillator (HSE) with PLL.
 - Serial terminal application (PuTTY or equivalent)
 - 
 ## Circuit Diagram
-<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/6a3ddf41-05e6-4da6-b4f0-63a6cafc0b6e" />
+![Diagram](9b.png)
 
 ## Testing
 
