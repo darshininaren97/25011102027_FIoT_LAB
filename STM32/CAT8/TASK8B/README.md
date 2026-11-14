@@ -1,83 +1,95 @@
-# Task 8B – Debounced LED Toggle (STM32)
+# STM32 GPIO – Debounced Switch-Controlled LED Toggle
 
-## Aim
-To interface a switch with an STM32 microcontroller and toggle an LED whenever a valid switch press is detected, using software debouncing to eliminate unwanted multiple triggers caused by switch bouncing.
+A switch-driven LED control application using the STM32 HAL library. The firmware detects valid button presses and toggles an LED connected to PC13, using a software debounce mechanism to prevent multiple triggers caused by mechanical switch bouncing.
 
-## Hardware Requirements
-- STM32 development board
-- LED connected to GPIO pin PC13
-- Switch connected to GPIO pin PA3
+Unlike a simple switch-controlled LED, this implementation changes the LED state once per valid press rather than continuously following the switch state.
 
-## GPIO Configuration
+## Features
+
+- GPIO-based switch input monitoring.
+- Software debouncing with a 30 ms stability interval.
+- Single toggle per valid button press.
+- Non-blocking time tracking using `HAL_GetTick()`.
+- LED state control using `HAL_GPIO_TogglePin()`.
+- No blocking delay loops for debouncing.
+
+## Hardware Configuration
 
 | Pin | Configuration | Function |
 |---|---|---|
-| PA3 | Input with pull-up | Reads switch state |
-| PC13 | Output push-pull | Controls LED |
+| PA3 | Input with Pull-up | Reads switch state |
+| PC13 | Output Push-Pull | Controls LED |
 
-## Working Principle
+## How It Works
 
-The program continuously monitors the switch connected to PA3.
+The application continuously monitors the switch connected to PA3 and validates input changes before accepting them.
 
-Mechanical switches may produce multiple rapid HIGH and LOW transitions when pressed or released. This is known as switch bouncing. To avoid registering these transitions as multiple presses, the program implements a software debounce mechanism.
+Mechanical switches can produce rapid HIGH and LOW transitions during a press or release. These unwanted transitions are known as *switch bouncing*.
 
-A switch state is accepted only when it remains unchanged for **30 milliseconds**.
+To handle this, the firmware requires the input to remain unchanged for at least **30 milliseconds** before accepting a new state.
 
-- **Valid press:** The LED toggles its current state once.
-- **Switch release:** The stable switch state is updated, but the LED does not toggle.
-- **Repeated bouncing:** The stability timer restarts whenever a raw switch-state change is detected.
+### Debouncing Logic
 
-The LED connected to PC13 is active-low:
-- `GPIO_PIN_RESET` – LED ON
-- `GPIO_PIN_SET` – LED OFF
-
-## Debouncing Logic
-
-The program uses the following variables:
+The implementation uses the following variables:
 
 | Variable | Purpose |
 |---|---|
-| `lastRaw` | Stores the previous raw switch reading |
-| `stableState` | Stores the debounced switch state |
-| `lastChangeTick` | Stores the tick count when the raw state last changed |
-| `DEBOUNCE_MS` | Defines the required stability period (30 ms) |
+| `lastRaw` | Previous raw switch reading |
+| `stableState` | Last accepted debounced state |
+| `lastChangeTick` | Timestamp of the most recent raw state change |
+| `DEBOUNCE_MS` | Required stability interval (30 ms) |
 
-`HAL_GetTick()` is used to obtain the current system tick count.
+`HAL_GetTick()` provides the system tick count used to measure the stability interval without blocking program execution.
 
-The program follows these steps:
+### Input Processing
 
-1. Read the current switch state.
-2. Compare it with the previous raw reading.
-3. If a change is detected, update `lastRaw` and restart the stability timer.
-4. Check whether the raw state has remained unchanged for at least 30 ms.
-5. If the stable state has changed, update `stableState`.
-6. If the accepted state represents a press, toggle the LED using `HAL_GPIO_TogglePin()`.
+1. Read the current raw switch state.
+2. Detect changes by comparing it with `lastRaw`.
+3. If a change occurs, update `lastRaw` and reset the stability timer.
+4. Check whether the input has remained unchanged for 30 ms.
+5. Accept the new state if the stability condition is satisfied.
+6. If the accepted state represents a button press, toggle the LED.
+7. Continue monitoring for subsequent presses.
+
+### LED Logic
+
+PC13 is connected to an active-low LED:
+
+| GPIO Output | LED State |
+|---|---|
+| `GPIO_PIN_RESET` | ON |
+| `GPIO_PIN_SET` | OFF |
+
+The LED is toggled using:
+
+```c
+HAL_GPIO_TogglePin();
+```
 
 ## Clock Configuration
 
-The system clock is configured using the external high-speed oscillator (HSE) and PLL.
+The system clock uses an external High-Speed Oscillator (HSE) with PLL.
 
-- Oscillator source: HSE
-- PLL source: HSE
-- PLL multiplication factor: ×9
-- AHB prescaler: 1
-- APB1 prescaler: 2
-- APB2 prescaler: 1
+| Parameter | Configuration |
+|---|---|
+| Oscillator Source | HSE |
+| PLL Source | HSE |
+| PLL Multiplier | ×9 |
+| AHB Prescaler | 1 |
+| APB1 Prescaler | 2 |
+| APB2 Prescaler | 1 |
 
-## Software Requirements
+## Requirements
+
+- STM32 development board
+- Push-button switch connected to PA3
+- LED connected to PC13
 - STM32CubeIDE
 - STM32 HAL Library
-- STM32 development board
 
-## Key Concepts Demonstrated
-- GPIO input and output configuration
-- Software switch debouncing
-- Non-blocking time-based delay using `HAL_GetTick()`
-- Edge/state-change detection
-- LED toggling using `HAL_GPIO_TogglePin()`
-- Active-low LED operation
-- Continuous polling using an infinite loop
+## Circuit Diagram
+<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/6565a1da-bdab-4583-a3e2-46ff1efacf5f" />
 
-## Observation
+## Behaviour
 
-The LED changes its state exactly once for every valid switch press. The 30 ms debounce interval prevents mechanical switch bouncing from causing multiple unwanted toggles. The program does not use blocking delay functions for debouncing.
+Each valid button press toggles the LED exactly once. The 30 ms stability check filters out rapid transitions caused by mechanical switch bouncing, while the non-blocking implementation allows the main loop to continue executing during the debounce interval.
