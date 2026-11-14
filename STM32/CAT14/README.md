@@ -124,7 +124,7 @@ The ESP8266 requires a suitable 3.3V power supply capable of handling its curren
 - STM32F401RE Nucleo board
   
 ## Circuit Diagram
-<img width="1024" height="559" alt="image" src="https://github.com/user-attachments/assets/211151ac-a912-4aca-893d-74fb90247564" />
+![Diagram](14.png)
 
 ## Notes
 
