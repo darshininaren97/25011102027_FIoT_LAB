@@ -217,6 +217,8 @@ The web dashboard provides:
 7. Verify that sensor readings are being published to the MQTT topic.
 
 ### Node-RED Dashboard
+<img width="847" height="507" alt="Screenshot 2026-11-14 140139" src="https://github.com/user-attachments/assets/257a7442-29bf-486b-8f9e-02b787770b1b" />
+
 
 1. Install and run Node-RED.
 2. Import the provided Node-RED flow JSON.
